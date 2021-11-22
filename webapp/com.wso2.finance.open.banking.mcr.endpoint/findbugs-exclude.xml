@@ -13,11 +13,7 @@
 
 <FindBugsFilter>
     <Match>
-        <Package name="~com.wso2.finance.open.banking.application.info.endpoint.model*"/>
+        <Package name="~com.wso2.finance.open.banking.mcr.endpoint.model*"/>
     </Match>
 
-    <Match>
-        <Class name="com.wso2.finance.open.banking.application.info.endpoint.api.data.MetaDataDAOImpl"/>
-        <Bug pattern="SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"/>
-    </Match>
 </FindBugsFilter>

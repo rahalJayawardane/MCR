@@ -17,7 +17,7 @@
 <context:annotation-config/>
 <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"/>
 <bean class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer"/>
-<jaxrs:server id="services" address="/v1.3.0/">
+<jaxrs:server id="services" address="/v1.0.0/">
     <jaxrs:serviceBeans>
         <bean class="com.wso2.finance.open.banking.mcr.endpoint.api.impl.SSAInformationApiServiceImpl"/>
     </jaxrs:serviceBeans>
