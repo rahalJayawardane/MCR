@@ -1,0 +1,85 @@
+openapi: 3.0.0
+info:
+  version: v1.3.0
+  title: SSAInfoAPI
+  description: This specifies a RESTful API for retrieving SSA Information
+  contact:
+    name: WSO2
+    url: http://wso2.com/solutions/financial/open-banking/
+    email: openbankingdemo@wso2.com
+  license:
+    name: WSO2 Commercial License
+    url: https://wso2.com
+servers:
+  - url: https://{ob_apim_host}:{ob_apim_port}/api/openbanking/mcr/v1.3.0/
+    variables:
+      ob_km_host:
+        default: localhost
+        description: Host of the Open Banking API Manager
+      ob_km_port:
+        default: "9443"
+        description: Port of the Open Banking API Manager
+paths:
+  /mcr/ssa/validity/:
+    post:
+      summary: Retrieve SSA information
+      operationId: getSSAInformation
+      tags:
+        - SSA Information
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              properties:
+                ssa:
+                  description: SSA given by OBIE
+                  type: string
+              required:
+                - status
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SoftwareStatement"
+        "404":
+          description: Service Provider Data Not Found
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SSAInfoErrorDTO"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SSAInfoErrorDTO"
+components:
+  schemas:
+    SoftwareStatement:
+      title: Application Bulk Metadata Success Response
+      description: Defines metadata for the requested applications
+      type: object
+      properties:
+        data:
+          type: object
+          description: Key value pairs of client ids and attributes
+      required:
+        - data
+    SSAInfoErrorDTO:
+      title: Error Response
+      description: Defines an error object for the Application Information API
+      type: object
+      properties:
+        status:
+          type: string
+          description: The HTTP error code as a string
+        title:
+          type: string
+          description: Error summary
+        description:
+          type: string
+          description: Human readable error description
