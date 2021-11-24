@@ -16,11 +16,15 @@ import com.wso2.finance.open.banking.common.util.client.registration.data.Softwa
 import com.wso2.finance.open.banking.manual.client.registration.endpoint.impl.SSAInformationApiImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiResponse;
+import org.json.JSONObject;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
@@ -43,9 +47,10 @@ public class SSAInformationApi {
             @ApiResponse(code = 404, message = "Service Provider Data Not Found")
     })
 
-    public Response getSSAInformation(@RequestBody String ssa) throws Exception {
+    public Response getSSAInformation(@RequestBody String data) throws Exception {
+        JSONObject request = new JSONObject(data);
         SSAInformationApiImpl ssaInformationApi = new SSAInformationApiImpl();
-        return  ssaInformationApi.getSSAInformation(ssa);
+        return  ssaInformationApi.getSSAInformation(request.getString("ssa"));
     }
 }
 

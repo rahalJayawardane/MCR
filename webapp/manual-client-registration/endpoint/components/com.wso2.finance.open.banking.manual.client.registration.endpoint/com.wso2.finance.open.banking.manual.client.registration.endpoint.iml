@@ -31,11 +31,11 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-core:5.1.2.RELEASE" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-jcl:5.1.2.RELEASE" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.cxf:cxf-bundle-jaxrs:2.7.18" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.codehaus.woodstox:woodstox-core-asl:4.4.1" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.woodstox:woodstox-core-asl:4.4.1" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.woodstox:stax2-api:3.1.4" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.ws.xmlschema:xmlschema-core:2.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-javamail_1.4_spec:1.7.1" level="project" />
-    <orderEntry type="library" name="Maven: wsdl4j:wsdl4j:1.6.3" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: wsdl4j:wsdl4j:1.6.3" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.sun.xml.bind:jaxb-impl:2.2.6" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.eclipse.jetty:jetty-server:8.1.15.v20140411" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.eclipse.jetty:jetty-continuation:8.1.15.v20140411" level="project" />
@@ -46,8 +46,8 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.slf4j:slf4j-api:1.7.13" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.geronimo.specs:geronimo-servlet_3.0_spec:1.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.ws.rs:javax.ws.rs-api:2.0.1" level="project" />
-    <orderEntry type="module" module-name="com.wso2.finance.open.banking.common" />
-    <orderEntry type="library" name="Maven: org.wso2.carbon.identity.framework:org.wso2.carbon.identity.base:5.17.5" level="project" />
+    <orderEntry type="module" module-name="com.wso2.finance.open.banking.common" scope="PROVIDED" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.carbon.identity.framework:org.wso2.carbon.identity.base:5.17.5" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.carbon:org.wso2.carbon.core:4.6.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.orbit.com.hazelcast:hazelcast:3.12.2.wso2v1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.eclipse.platform:org.eclipse.osgi:3.14.0" level="project" />
@@ -59,7 +59,7 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.orbit.org.bouncycastle:bcprov-jdk15on:1.60.0.wso2v1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.bouncycastle:bcprov-jdk15on:1.59" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.carbon:javax.cache.wso2:4.6.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-jta_1.1_spec:1.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.geronimo.specs:geronimo-jta_1.1_spec:1.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.carbon:org.wso2.carbon.base:4.6.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.ws.commons.axiom.wso2:axiom:1.2.11-wso2v16" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.geronimo.specs.wso2:geronimo-stax-api_1.0_spec:1.0.1.wso2v2" level="project" />
@@ -67,15 +67,15 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.carbon:org.wso2.carbon.registry.core:4.6.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: commons-io.wso2:commons-io:2.4.0.wso2v1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: net.sourceforge.findbugs:annotations:1.3.2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.ws.commons.schema.wso2:XmlSchema:1.4.7.wso2v6" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.ws.commons.schema.wso2:XmlSchema:1.4.7.wso2v6" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.carbon:org.wso2.carbon.registry.api:4.6.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.carbon:org.wso2.carbon.registry.xboot:4.6.0" level="project" />
-    <orderEntry type="library" name="Maven: org.wso2.securevault:org.wso2.securevault:1.1.3" level="project" />
-    <orderEntry type="library" name="Maven: jline:jline:0.9.94" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.securevault:org.wso2.securevault:1.1.3" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: jline:jline:0.9.94" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:3.8.1" level="project" />
-    <orderEntry type="library" name="Maven: commons-cli:commons-cli:1.0" level="project" />
-    <orderEntry type="library" name="Maven: commons-io:commons-io:2.6" level="project" />
-    <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: commons-cli:commons-cli:1.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: commons-io:commons-io:2.6" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: commons-codec:commons-codec:1.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.compass-project.wso2:compass:2.0.1.wso2v2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.abdera.wso2:abdera:1.0.0.wso2v3" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.orbit.org.apache.tomcat:jdbc-pool:9.0.16.wso2v1" level="project" />
@@ -96,7 +96,7 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.carbon:org.wso2.carbon.queuing:4.6.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.igniterealtime.smack.wso2:smack:3.0.4.wso2v1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.igniterealtime.smack.wso2:smackx:3.0.4.wso2v1" level="project" />
-    <orderEntry type="library" name="Maven: org.wso2.orbit.commons-fileupload:commons-fileupload:1.3.3.wso2v1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.orbit.commons-fileupload:commons-fileupload:1.3.3.wso2v1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.ant.wso2:ant:1.7.0.wso2v1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.ant:ant:1.7.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.ant:ant-launcher:1.7.0" level="project" />
@@ -120,34 +120,33 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.osgi:org.osgi.service.component.annotations:1.3.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.osgi:org.osgi.annotation:6.0.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.osgi:org.osgi.service.metatype.annotations:1.3.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.rampart.wso2:rampart-core:1.6.1-wso2v43" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.axis2:axis2-kernel:1.6.1-wso2v41" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-ws-metadata_2.0_spec:1.1.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.rampart.wso2:rampart-core:1.6.1-wso2v43" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.axis2:axis2-kernel:1.6.1-wso2v41" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.geronimo.specs:geronimo-ws-metadata_2.0_spec:1.1.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: commons-httpclient:commons-httpclient:3.1" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.neethi:neethi:2.0.4" level="project" />
-    <orderEntry type="library" name="Maven: org.codehaus.woodstox:wstx-asl:3.2.4" level="project" />
-    <orderEntry type="library" name="Maven: stax:stax-api:1.0.1" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.woden:woden-api:1.0M9" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.ws.commons.schema:XmlSchema:1.4.7" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.woden:woden-impl-dom:1.0M9" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.woden:woden-impl-commons:1.0M9" level="project" />
-    <orderEntry type="library" name="Maven: commons-lang:commons-lang:2.6" level="project" />
-    <orderEntry type="library" name="Maven: org.ops4j.pax.logging:pax-logging-api:1.10.1" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.ws.security.wso2:wss4j:1.5.11-wso2v20" level="project" />
-    <orderEntry type="library" name="Maven: org.wso2.orbit.org.apache.neethi:neethi:2.0.4.wso2v5" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.neethi:neethi:2.0.4" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.codehaus.woodstox:wstx-asl:3.2.4" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: stax:stax-api:1.0.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.woden:woden-api:1.0M9" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.ws.commons.schema:XmlSchema:1.4.7" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.woden:woden-impl-dom:1.0M9" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.woden:woden-impl-commons:1.0M9" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: commons-lang:commons-lang:2.6" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.ops4j.pax.logging:pax-logging-api:1.10.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.ws.security.wso2:wss4j:1.5.11-wso2v20" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.orbit.org.apache.neethi:neethi:2.0.4.wso2v5" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: commons-lang.wso2:commons-lang:2.6.0.wso2v1" level="project" />
-    <orderEntry type="library" name="Maven: org.wso2.orbit.commons-collections:commons-collections:3.2.2.wso2v1" level="project" />
-    <orderEntry type="library" name="Maven: org.json:json:20170516" level="project" />
-    <orderEntry type="library" name="Maven: org.wso2.orbit.com.nimbusds:nimbus-jose-jwt:7.3.0.wso2v1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.orbit.commons-collections:commons-collections:3.2.2.wso2v1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.json:json:20170516" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.wso2.orbit.com.nimbusds:nimbus-jose-jwt:7.3.0.wso2v1" level="project" />
     <orderEntry type="library" name="Maven: org.wso2.orbit.org.apache.httpcomponents:httpclient:4.3.6.wso2v2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.ws.commons.axiom:axiom-impl:1.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.ws.commons.axiom:axiom-impl:1.2.14" level="project" />
     <orderEntry type="library" name="Maven: org.apache.ws.commons.axiom:axiom-api:1.2.14" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-activation_1.1_spec:1.1" level="project" />
     <orderEntry type="library" name="Maven: jaxen:jaxen:1.1.4" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-stax-api_1.0_spec:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.james:apache-mime4j-core:0.7.2" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.woodstox:woodstox-core:6.2.6" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-activation_1.1_spec:1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-stax-api_1.0_spec:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.testng:testng:6.14.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: com.beust:jcommander:1.72" level="project" />

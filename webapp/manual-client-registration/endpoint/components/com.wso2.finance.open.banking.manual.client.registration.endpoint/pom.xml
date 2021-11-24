@@ -51,6 +51,7 @@
                     <artifactId>icu4j</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.ws.commons.axiom</groupId>

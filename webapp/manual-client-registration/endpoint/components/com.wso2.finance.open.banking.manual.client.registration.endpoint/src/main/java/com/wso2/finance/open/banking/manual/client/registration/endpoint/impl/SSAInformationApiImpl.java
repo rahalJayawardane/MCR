@@ -5,9 +5,11 @@ import com.wso2.finance.open.banking.common.util.client.registration.data.Softwa
 import com.wso2.finance.open.banking.manual.client.registration.endpoint.MCRApiService;
 
 import java.util.HashMap;
-import java.util.Map;
 import javax.ws.rs.core.Response;
 
+/**
+ * Get SSA details for MCR request
+ */
 public class SSAInformationApiImpl extends MCRApiService {
 
     @Override
