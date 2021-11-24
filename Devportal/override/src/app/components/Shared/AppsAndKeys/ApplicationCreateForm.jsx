@@ -22,6 +22,7 @@ import Application from 'AppData/Application';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Settings from 'Settings';
+import axios from 'axios';
 
 
 /**
@@ -64,6 +65,26 @@ const mcrInputProps = {
 };
 if (isMCREnabled) mcrInputProps.disabled = true;
 
+
+// export default function App() {
+//     const [post, setPost] = React.useState(null);
+
+//     React.useEffect(() => {
+//       axios.get(baseURL).then((response) => {
+//         setPost(response.data);
+//       });
+//     }, []);
+
+//     if (!post) return null;
+
+//     return (
+//       <div>
+//         <h1>{post.title}</h1>
+//         <p>{post.body}</p>
+//       </div>
+//     );
+// }
+
 const ApplicationCreate = (props) => {
     /**
      * This method is used to handle the updating of create application
@@ -97,6 +118,38 @@ const ApplicationCreate = (props) => {
         updateApplicationRequest(newRequest);
     };
 
+    const [ssa, setSSA] = React.useState(null);
+
+    /**
+     * AJAX call for MCR details
+     * @param {*} event - get ssa from input
+     */
+    function createPost(event) {
+        const data123 = { ssa: event.target.value };
+        axios.post(
+            'https://localhost:9443/api/openbanking/manual-client-registration/mcr/ssa/validity',
+            data123,
+            {
+                headers: {
+                    'content-type': 'application/json',
+                },
+            },
+        )
+            .then((response) => {
+                setSSA(response.data);
+                // eslint-disable-next-line no-console
+                console.log(ssa);
+                // eslint-disable-next-line no-console
+                console.log('response' + response);
+            })
+            .catch((response) => {
+                // handle error
+                // eslint-disable-next-line no-console
+                console.log('error' + response);
+            });
+    }
+
+    alert(ssa.details.softwareEnvironment);
     /**
      *
      *
@@ -282,7 +335,7 @@ const ApplicationCreate = (props) => {
                         id: 'Shared.AppsAndKeys.ApplicationCreateForm.ssa.help',
                     })}
                     name='ssa'
-                    onChange={handleChange}
+                    onChange={createPost}
                     placeholder={intl.formatMessage({
                         defaultMessage: 'SSA value',
                         id: 'Shared.AppsAndKeys.ApplicationCreateForm.application.ssa.placeholder',
