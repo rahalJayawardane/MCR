@@ -138,9 +138,18 @@ const ApplicationCreate = (props) => {
             .then((response) => {
                 setSSA(response.data);
                 // eslint-disable-next-line no-console
-                console.log(ssa);
-                // eslint-disable-next-line no-console
-                console.log('response' + response);
+                alert(ssa.details.softwareEnvironment);
+                if (ssa.details.softwareEnvironment === 'sandbox') {
+                    alert('taking values');
+                    // eslint-disable-next-line react/no-this-in-sfc
+                    this.setState({
+                        software_id_sandbox: ssa.details.softwareID,
+                        software_roles_sandbox: ssa.details.softwareRoles,
+                        software_jwks_endpoint_sandbox: ssa.details.softwareJwksEndpointt,
+                        org_id_sandbox: ssa.details.orgID,
+                        scope_sandbox: ssa.details.softwareID,
+                    });
+                }
             })
             .catch((response) => {
                 // handle error
@@ -148,8 +157,6 @@ const ApplicationCreate = (props) => {
                 console.log('error' + response);
             });
     }
-
-    alert(ssa.details.softwareEnvironment);
     /**
      *
      *
@@ -172,6 +179,7 @@ const ApplicationCreate = (props) => {
         handleDeleteChip,
     } = props;
     return (
+        // eslint-disable-next-line react/jsx-filename-extension
         <form noValidate autoComplete='off' className={classes.applicationForm}>
             <TextField
                 classes={{
@@ -285,7 +293,7 @@ const ApplicationCreate = (props) => {
                     id: 'Shared.AppsAndKeys.ApplicationCreateForm.describe.the.application.help',
                 })}
                 name='description'
-                onChange={handleChange}
+                onInput={handleChange}
                 placeholder={intl.formatMessage({
                     defaultMessage: 'My Mobile Application',
                     id: 'Shared.AppsAndKeys.ApplicationCreateForm.my.mobile.application.placeholder',
@@ -356,7 +364,7 @@ const ApplicationCreate = (props) => {
                             variant='outlined'
                             required={isRequiredAttribute(item[1].attribute)}
                             label={item[1].attribute}
-                            value={getAttributeValue(item[1].attribute)}
+                            value={this.state.getAttributeValue(item[1].attribute)}
                             helperText={item[1].description}
                             fullWidth
                             name={item[1].attribute}
