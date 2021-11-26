@@ -24,7 +24,6 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Settings from 'Settings';
 import axios from 'axios';
 
-
 /**
  * @inheritdoc
  * @param {*} theme theme object
@@ -60,30 +59,6 @@ const styles = (theme) => ({
 });
 
 const isMCREnabled = Settings.openbanking.enableMCR;
-const mcrInputProps = {
-    readOnly: true,
-};
-if (isMCREnabled) mcrInputProps.disabled = true;
-
-
-// export default function App() {
-//     const [post, setPost] = React.useState(null);
-
-//     React.useEffect(() => {
-//       axios.get(baseURL).then((response) => {
-//         setPost(response.data);
-//       });
-//     }, []);
-
-//     if (!post) return null;
-
-//     return (
-//       <div>
-//         <h1>{post.title}</h1>
-//         <p>{post.body}</p>
-//       </div>
-//     );
-// }
 
 const ApplicationCreate = (props) => {
     /**
@@ -119,16 +94,18 @@ const ApplicationCreate = (props) => {
     };
 
     const [ssa, setSSA] = React.useState(null);
+    const { useEffect } = React;
 
     /**
      * AJAX call for MCR details
      * @param {*} event - get ssa from input
      */
-    function createPost(event) {
-        const data123 = { ssa: event.target.value };
-        axios.post(
-            'https://localhost:9443/api/openbanking/manual-client-registration/mcr/ssa/validity',
-            data123,
+    async function createPost(event) {
+        const request = { ssa: event.target.value };
+        const apimServerURL = Settings.openbanking.apim_url;
+        await axios.post(
+            apimServerURL + '/api/openbanking/manual-client-registration/mcr/ssa/validity',
+            request,
             {
                 headers: {
                     'content-type': 'application/json',
@@ -137,26 +114,15 @@ const ApplicationCreate = (props) => {
         )
             .then((response) => {
                 setSSA(response.data);
-                // eslint-disable-next-line no-console
-                alert(ssa.details.softwareEnvironment);
-                if (ssa.details.softwareEnvironment === 'sandbox') {
-                    alert('taking values');
-                    // eslint-disable-next-line react/no-this-in-sfc
-                    this.setState({
-                        software_id_sandbox: ssa.details.softwareID,
-                        software_roles_sandbox: ssa.details.softwareRoles,
-                        software_jwks_endpoint_sandbox: ssa.details.softwareJwksEndpointt,
-                        org_id_sandbox: ssa.details.orgID,
-                        scope_sandbox: ssa.details.softwareID,
-                    });
-                }
+                useEffect(() => { setSSA(response.data); }, []);
             })
-            .catch((response) => {
-                // handle error
-                // eslint-disable-next-line no-console
-                console.log('error' + response);
+            .catch(() => {
+                //setSSA(null);
+                //useEffect(() => { setSSA(null); }, []);
             });
     }
+
+
     /**
      *
      *
@@ -179,7 +145,6 @@ const ApplicationCreate = (props) => {
         handleDeleteChip,
     } = props;
     return (
-        // eslint-disable-next-line react/jsx-filename-extension
         <form noValidate autoComplete='off' className={classes.applicationForm}>
             <TextField
                 classes={{
@@ -293,7 +258,7 @@ const ApplicationCreate = (props) => {
                     id: 'Shared.AppsAndKeys.ApplicationCreateForm.describe.the.application.help',
                 })}
                 name='description'
-                onInput={handleChange}
+                onChange={handleChange}
                 placeholder={intl.formatMessage({
                     defaultMessage: 'My Mobile Application',
                     id: 'Shared.AppsAndKeys.ApplicationCreateForm.my.mobile.application.placeholder',
@@ -318,42 +283,190 @@ const ApplicationCreate = (props) => {
             />
 
             {isMCREnabled ? (
-                <TextField
-                    classes={{
-                        root: classes.mandatoryStarText,
-                    }}
-                    id='SSA'
-                    margin='normal'
-                    variant='outlined'
-                    fullWidth
-                    multiline
-                    required
-                    rows={10}
-                    rowsMax={Infinity}
-                    value={applicationRequest.ssa}
-                    label={(
-                        <FormattedMessage
-                            defaultMessage='Software Statement Assertion'
-                            id='Shared.AppsAndKeys.ApplicationCreateForm.application.ssa.label'
-                        />
-                    )}
-                    helperText={intl.formatMessage({
-                        defaultMessage:
-                                'The SSA given by OBIE',
-                        id: 'Shared.AppsAndKeys.ApplicationCreateForm.ssa.help',
-                    })}
-                    name='ssa'
-                    onChange={createPost}
-                    placeholder={intl.formatMessage({
-                        defaultMessage: 'SSA value',
-                        id: 'Shared.AppsAndKeys.ApplicationCreateForm.application.ssa.placeholder',
-                    })}
-                />
-            ) : (
-                ''
-            )}
+                <div>
+                    <TextField
+                        classes={{
+                            root: classes.mandatoryStarText,
+                        }}
+                        id='SSA'
+                        margin='normal'
+                        variant='outlined'
+                        fullWidth
+                        multiline
+                        required
+                        rows={10}
+                        rowsMax={Infinity}
+                        value={applicationRequest.ssa}
+                        label={(
+                            <FormattedMessage
+                                defaultMessage='Software Statement Assertion'
+                                id='Shared.AppsAndKeys.ApplicationCreateForm.application.ssa.label'
+                            />
+                        )}
+                        helperText={intl.formatMessage({
+                            defaultMessage:
+                                    'The SSA given by OBIE',
+                            id: 'Shared.AppsAndKeys.ApplicationCreateForm.ssa.help',
+                        })}
+                        name='ssa'
+                        onChange={createPost}
+                        placeholder={intl.formatMessage({
+                            defaultMessage: 'SSA value',
+                            id: 'Shared.AppsAndKeys.ApplicationCreateForm.application.ssa.placeholder',
+                        })}
+                    />
+                    {ssa != null && ssa.details.softwareEnvironment == 'sandbox' ? (
+                        <div>
+                            <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='Environment'
+                                value={(ssa != null) ? ssa.details.softwareEnvironment : ''}
+                                fullWidth
+                                name='software_id_env'
+                                className={classes.inputText}
+                            />
+                            <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='Sandbox Software ID'
+                                value={(ssa != null) ? ssa.details.softwareID : ''}
+                                fullWidth
+                                name='software_id_sandbox'
+                                className={classes.inputText}
+                            />
+                            <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='Sandbox Software Roles'
+                                value={(ssa != null) ? ssa.details.softwareRoles : ''}
+                                fullWidth
+                                name='software_roles_sandbox'
+                                className={classes.inputText}
+                            />
+                            <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='Sandbox JWKS Endpoint'
+                                value={(ssa != null) ? ssa.details.softwareJwksEndpointt : ''}
+                                fullWidth
+                                name='software_jwks_endpoint_sandbox'
+                                className={classes.inputText}
+                            />
+                            <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='Organization ID'
+                                value={(ssa != null) ? ssa.details.orgID : ''}
+                                fullWidth
+                                name='org_id_sandbox'
+                                className={classes.inputText}
+                            />
+                        </div>
+                    ) : (null)}
+                    {ssa != null && ssa.details.softwareEnvironment == 'production' ? (
+                        <div>
+                            <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='Environment'
+                                value={(ssa != null) ? ssa.details.softwareEnvironment : ''}
+                                fullWidth
+                                name='software_id_env'
+                                className={classes.inputText}
+                            />
+                            <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='Production Software ID'
+                                value={(ssa != null) ? ssa.details.softwareID : ''}
+                                fullWidth
+                                name='software_id_production'
+                                className={classes.inputText}
+                            />
+                            <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='Production Software Roles'
+                                value={(ssa != null) ? ssa.details.softwareRoles : ''}
+                                fullWidth
+                                name='software_roles_production'
+                                className={classes.inputText}
+                            />
+                            <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='Production JWKS Endpoint'
+                                value={(ssa != null) ? ssa.details.softwareJwksEndpointt : ''}
+                                fullWidth
+                                name='software_jwks_endpoint_production'
+                                className={classes.inputText}
+                            />
+                            <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='Organization ID'
+                                value={(ssa != null) ? ssa.details.orgID : ''}
+                                fullWidth
+                                name='org_id_production'
+                                className={classes.inputText}
+                            />
+                        </div>
+                    ) : (null)}
+                </div>
+            ) : (null)}
 
-            {allAppAttributes && (
+            {allAppAttributes && !isMCREnabled && (
                 Object.entries(allAppAttributes).map((item) => (
                     item[1].hidden !== 'true' ? (
                         <TextField
@@ -364,18 +477,17 @@ const ApplicationCreate = (props) => {
                             variant='outlined'
                             required={isRequiredAttribute(item[1].attribute)}
                             label={item[1].attribute}
-                            value={this.state.getAttributeValue(item[1].attribute)}
+                            value={getAttributeValue(item[1].attribute)}
                             helperText={item[1].description}
                             fullWidth
                             name={item[1].attribute}
                             onChange={handleAttributesChange(item[1].attribute)}
                             placeholder={'Enter ' + item[1].attribute}
                             className={classes.inputText}
-                            // eslint-disable-next-line react/jsx-props-no-spreading
-                            {...mcrInputProps}
                         />
                     ) : (null)))
             )}
+
             {isApplicationSharingEnabled && (
                 <ChipInput
                     label={(

@@ -35,5 +35,6 @@ const Settings = {
             client_credentials: 'Client Credentials',
         },
         enableMCR: true,
+        apim_url: 'https://localhost:9443',
     },
 };
