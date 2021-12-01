@@ -43,8 +43,9 @@ public class SSAInformationApi {
     @Produces({"application/json"})
     @io.swagger.annotations.ApiOperation(value = "get details of Software Statement Assertion", response = void.class)
     @io.swagger.annotations.ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = SoftwareStatement.class),
-            @ApiResponse(code = 404, message = "Service Provider Data Not Found")
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 404, message = "Service Provider Data Not Found"),
+            @ApiResponse(code = 500, message = "Invalid SSA")
     })
 
     public Response getSSAInformation(@RequestBody String data) throws Exception {
