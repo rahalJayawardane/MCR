@@ -176,10 +176,9 @@ const ApplicationCreate = (props) => {
                 setSSA(response.data);
                 returnValue = response.data;
             })
-            .catch(() => {
-                const ssaBody = { details: { softwareEnvironment: 'none' } };
-                setSSA(ssaBody);
-                returnValue = ssaBody;
+            .catch((error) => {
+                setSSA(error.data);
+                returnValue = error.data;
             });
 
         try {
