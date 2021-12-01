@@ -54,8 +54,8 @@ const styles = (theme) => ({
     applicationForm: {
         '& span, & div, & p, & input': {
             color: theme.palette.getContrastText(theme.palette.background.paper),
-        }
-    }
+        },
+    },
 });
 
 const isMCREnabled = Settings.openbanking.enableMCR;
@@ -95,33 +95,7 @@ const ApplicationCreate = (props) => {
 
     const [ssa, setSSA] = React.useState(null);
     const { useEffect } = React;
-
-    /**
-     * AJAX call for MCR details
-     * @param {*} event - get ssa from input
-     */
-    async function createPost(event) {
-        const request = { ssa: event.target.value };
-        const apimServerURL = Settings.openbanking.apim_url;
-        await axios.post(
-            apimServerURL + '/api/openbanking/manual-client-registration/mcr/ssa/validity',
-            request,
-            {
-                headers: {
-                    'content-type': 'application/json',
-                },
-            },
-        )
-            .then((response) => {
-                setSSA(response.data);
-                useEffect(() => { setSSA(response.data); }, []);
-            })
-            .catch(() => {
-                //setSSA(null);
-                //useEffect(() => { setSSA(null); }, []);
-            });
-    }
-
+    const [isSSAValid, setIsSSAValid] = React.useState(false);
 
     /**
      *
@@ -144,6 +118,77 @@ const ApplicationCreate = (props) => {
         handleAddChip,
         handleDeleteChip,
     } = props;
+
+    /**
+     * to set relavent values to the applicationRequest object.
+     * setSSAValues() will call from one textfield via the onChange event for each environment
+     */
+    function setSSAValues() {
+        if (ssa.details.softwareEnvironment === 'sandbox') {
+            applicationRequest.attributes.software_id_sandbox = ssa.details.softwareID;
+            applicationRequest.attributes.org_id_sandbox = ssa.details.orgID;
+            applicationRequest.attributes.software_jwks_endpoint_sandbox = ssa.details.softwareJwksEndpointt;
+            applicationRequest.attributes.software_roles_sandbox = (ssa.details.softwareRoles).toString();
+        } else {
+            applicationRequest.attributes.software_id_production = ssa.details.softwareID;
+            applicationRequest.attributes.org_id_production = ssa.details.orgID;
+            applicationRequest.attributes.software_jwks_endpoint_production = ssa.details.softwareJwksEndpointt;
+            applicationRequest.attributes.software_roles_production = (ssa.details.softwareRoles).toString();
+        }
+    }
+
+    // eslint-disable-next-line require-jsdoc
+    function verifySSA(value) {
+        alert(value);
+        if (!value || value.trim() === '') {
+            setIsSSAValid({ isSSAValid: false });
+            return Promise.reject(new Error(intl.formatMessage({
+                defaultMessage: 'Application name is required',
+                id: 'Apis.Details.Credentials.Wizard.CreateAppStep.application.name.is.required',
+            })));
+        } else {
+            setIsSSAValid({ isSSAValid: true });
+            return Promise.reject(new Error(intl.formatMessage({
+                defaultMessage: 'Application name is required',
+                id: 'Apis.Details.Credentials.Wizard.CreateAppStep.application.name.is.required',
+            })));
+        }
+    };
+
+    /**
+     * AJAX call for MCR details
+     * @param {*} event - get ssa from input
+     */
+    async function validateSSA(event) {
+        const request = { ssa: event.target.value };
+        const apimServerURL = Settings.openbanking.apim_url;
+        let returnValue = null;
+        await axios.post(
+            apimServerURL + '/api/openbanking/manual-client-registration/mcr/ssa/validity',
+            request,
+            {
+                headers: {
+                    'content-type': 'application/json',
+                },
+            },
+        )
+            .then((response) => {
+                setSSA(response.data);
+                returnValue = response.data;
+            })
+            .catch(() => {
+                const ssaBody = { details: { softwareEnvironment: 'none' } };
+                setSSA(ssaBody);
+                returnValue = ssaBody;
+            });
+
+        try {
+            await useEffect(() => { setSSA(returnValue); }, []);
+        } catch (e) {
+            // console.log(e);
+        }
+    }
+
     return (
         <form noValidate autoComplete='off' className={classes.applicationForm}>
             <TextField
@@ -285,9 +330,6 @@ const ApplicationCreate = (props) => {
             {isMCREnabled ? (
                 <div>
                     <TextField
-                        classes={{
-                            root: classes.mandatoryStarText,
-                        }}
                         id='SSA'
                         margin='normal'
                         variant='outlined'
@@ -303,19 +345,23 @@ const ApplicationCreate = (props) => {
                                 id='Shared.AppsAndKeys.ApplicationCreateForm.application.ssa.label'
                             />
                         )}
-                        helperText={intl.formatMessage({
-                            defaultMessage:
-                                    'The SSA given by OBIE',
-                            id: 'Shared.AppsAndKeys.ApplicationCreateForm.ssa.help',
-                        })}
+                        // helperText={intl.formatMessage({
+                        //     defaultMessage:
+                        //             'The SSA given by OBIE',
+                        //     id: 'Shared.AppsAndKeys.ApplicationCreateForm.ssa.help',
+                        // })}
                         name='ssa'
-                        onChange={createPost}
+                        onChange={validateSSA}
                         placeholder={intl.formatMessage({
                             defaultMessage: 'SSA value',
                             id: 'Shared.AppsAndKeys.ApplicationCreateForm.application.ssa.placeholder',
                         })}
+                        onBlur={(e) => verifySSA(e.target.value)}
+                        // error={!isSSAValid}
+                        error={(e) => e.target.value === ''}
+                        helperText={((e) => e.target.value === '') ? 'Empty field!' : 'sadasdd'}
                     />
-                    {ssa != null && ssa.details.softwareEnvironment == 'sandbox' ? (
+                    {ssa != null && ssa.details.softwareEnvironment === 'sandbox' ? (
                         <div>
                             <TextField
                                 classes={{
@@ -325,22 +371,9 @@ const ApplicationCreate = (props) => {
                                 variant='outlined'
                                 required
                                 disabled
-                                label='Environment'
-                                value={(ssa != null) ? ssa.details.softwareEnvironment : ''}
-                                fullWidth
-                                name='software_id_env'
-                                className={classes.inputText}
-                            />
-                            <TextField
-                                classes={{
-                                    root: classes.mandatoryStarText,
-                                }}
-                                margin='normal'
-                                variant='outlined'
-                                required
-                                disabled
                                 label='Sandbox Software ID'
-                                value={(ssa != null) ? ssa.details.softwareID : ''}
+                                value={((ssa != null) ? ssa.details.softwareID : '')}
+                                onChange={setSSAValues()}
                                 fullWidth
                                 name='software_id_sandbox'
                                 className={classes.inputText}
@@ -389,22 +422,8 @@ const ApplicationCreate = (props) => {
                             />
                         </div>
                     ) : (null)}
-                    {ssa != null && ssa.details.softwareEnvironment == 'production' ? (
+                    {ssa != null && ssa.details.softwareEnvironment === 'production' ? (
                         <div>
-                            <TextField
-                                classes={{
-                                    root: classes.mandatoryStarText,
-                                }}
-                                margin='normal'
-                                variant='outlined'
-                                required
-                                disabled
-                                label='Environment'
-                                value={(ssa != null) ? ssa.details.softwareEnvironment : ''}
-                                fullWidth
-                                name='software_id_env'
-                                className={classes.inputText}
-                            />
                             <TextField
                                 classes={{
                                     root: classes.mandatoryStarText,
@@ -415,6 +434,7 @@ const ApplicationCreate = (props) => {
                                 disabled
                                 label='Production Software ID'
                                 value={(ssa != null) ? ssa.details.softwareID : ''}
+                                onChange={setSSAValues()}
                                 fullWidth
                                 name='software_id_production'
                                 className={classes.inputText}
@@ -461,6 +481,11 @@ const ApplicationCreate = (props) => {
                                 name='org_id_production'
                                 className={classes.inputText}
                             />
+                        </div>
+                    ) : (null)}
+                    {ssa != null && ssa.details.softwareEnvironment === 'none' ? (
+                        <div>
+                            <small style={{ color: 'red' }}> Incorrect SSA. Please insert the correct SSA given by OBIE </small>
                         </div>
                     ) : (null)}
                 </div>
