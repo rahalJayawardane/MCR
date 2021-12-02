@@ -26,4 +26,12 @@ public abstract class MCRApiService {
      * @return - http response
      */
     public abstract Response getSSAInformation(String ssa) throws Exception;
+
+    /**
+     * Generate Keys
+     *
+     * //@param jsonObject - SSA
+     * @return - http response
+     */
+    public abstract Response generateKeys(String body) throws Exception;
 }

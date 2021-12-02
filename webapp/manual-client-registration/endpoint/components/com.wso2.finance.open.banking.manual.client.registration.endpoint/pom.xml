@@ -58,6 +58,11 @@
             <artifactId>axiom-impl</artifactId>
             <version>1.2.14</version>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>

@@ -15,7 +15,7 @@ From: 'an unknown organization'
     License: Apache License 2.0  (http://www.apache.org/licenses/LICENSE-2.0.html)
   - swagger-jaxrs (https://github.com/swagger-api/swagger-core/modules/swagger-jaxrs) io.swagger:swagger-jaxrs:bundle:1.5.20
     License: Apache License 2.0  (http://www.apache.org/licenses/LICENSE-2.0.html)
-  - swagger-models (https://github.com/swagger-api/swagger-core/modules/swagger-models) io.swagger:swagger-models:bundle:1.5.20
+  - swagger-models (https://github.com/swagger-api/swagger-core/modules/swagger-models) io.swagger:swagger-models:bundle:1.5.23
     License: Apache License 2.0  (http://www.apache.org/licenses/LICENSE-2.0.html)
   - Bean Validation API (http://beanvalidation.org) javax.validation:validation-api:jar:1.1.0.Final
     License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
@@ -43,7 +43,7 @@ From: 'FasterXML' (http://fasterxml.com/)
     License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
   - jackson-databind (http://github.com/FasterXML/jackson) com.fasterxml.jackson.core:jackson-databind:bundle:2.11.2
     License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
-  - Jackson-dataformat-YAML (https://github.com/FasterXML/jackson-dataformats-text) com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:bundle:2.9.5
+  - Jackson-dataformat-YAML (https://github.com/FasterXML/jackson-dataformats-text) com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:bundle:2.9.9
     License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 From: 'fasterxml.com' (http://fasterxml.com)

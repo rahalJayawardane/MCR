@@ -53,5 +53,21 @@ public class SSAInformationApi {
         SSAInformationApiImpl ssaInformationApi = new SSAInformationApiImpl();
         return  ssaInformationApi.getSSAInformation(request.getString("ssa"));
     }
+
+    @POST
+    @Path("/mcr/ssa/key/generate")
+    @Consumes({"application/json"})
+    @Produces({"application/json"})
+    @io.swagger.annotations.ApiOperation(value = "get details of Software Statement Assertion", response = void.class)
+    @io.swagger.annotations.ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 404, message = "Data Not Found"),
+            @ApiResponse(code = 500, message = "Invalid Data")
+    })
+
+    public Response generateKeys(@RequestBody String data) throws Exception {
+        SSAInformationApiImpl ssaInformationApi = new SSAInformationApiImpl();
+        return  ssaInformationApi.generateKeys(data);
+    }
 }
 
