@@ -51,7 +51,7 @@ const styles = (theme) => ({
         marginLeft: 0,
         '& span': {
             color: theme.palette.getContrastText(theme.palette.primary.main),
-        }
+        },
     },
     cleanUpButton: {
         marginLeft: 15,

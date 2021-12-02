@@ -94,6 +94,7 @@ const ApplicationCreate = (props) => {
     };
 
     const [ssa, setSSA] = React.useState(null);
+    const [ssaValue, setSSAvalue] = React.useState(null);
     const { useEffect } = React;
     const [isSSAValid, setIsSSAValid] = React.useState(false);
 
@@ -124,22 +125,18 @@ const ApplicationCreate = (props) => {
      * setSSAValues() will call from one textfield via the onChange event for each environment
      */
     function setSSAValues() {
-        if (ssa.details.softwareEnvironment === 'sandbox') {
-            applicationRequest.attributes.software_id_sandbox = ssa.details.softwareID;
-            applicationRequest.attributes.org_id_sandbox = ssa.details.orgID;
-            applicationRequest.attributes.software_jwks_endpoint_sandbox = ssa.details.softwareJwksEndpointt;
-            applicationRequest.attributes.software_roles_sandbox = (ssa.details.softwareRoles).toString();
-        } else {
-            applicationRequest.attributes.software_id_production = ssa.details.softwareID;
-            applicationRequest.attributes.org_id_production = ssa.details.orgID;
-            applicationRequest.attributes.software_jwks_endpoint_production = ssa.details.softwareJwksEndpointt;
-            applicationRequest.attributes.software_roles_production = (ssa.details.softwareRoles).toString();
-        }
+        const env = ssa.details.softwareEnvironment;
+        applicationRequest.attributes['software_id_' + env] = ssa.details.softwareID;
+        applicationRequest.attributes['org_id_' + env] = ssa.details.orgID;
+        applicationRequest.attributes['software_jwks_endpoint_' + env] = ssa.details.softwareJwksEndpointt;
+        applicationRequest.attributes['software_roles_' + env] = (ssa.details.softwareRoles).toString();
+        applicationRequest.attributes.ssa_value = ssaValue;
     }
 
+    // todo:
     // eslint-disable-next-line require-jsdoc
     function verifySSA(value) {
-        alert(value);
+        // alert(value);
         if (!value || value.trim() === '') {
             setIsSSAValid({ isSSAValid: false });
             return Promise.reject(new Error(intl.formatMessage({
@@ -161,6 +158,7 @@ const ApplicationCreate = (props) => {
      */
     async function validateSSA(event) {
         const request = { ssa: event.target.value };
+        setSSAvalue(event.target.value);
         const apimServerURL = Settings.openbanking.apim_url;
         let returnValue = null;
         await axios.post(
@@ -419,6 +417,20 @@ const ApplicationCreate = (props) => {
                                 name='org_id_sandbox'
                                 className={classes.inputText}
                             />
+                            {/* <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='SSA'
+                                value={(ssa != null) ? ssaValue : ''}
+                                fullWidth
+                                name='ssa_value'
+                                className={classes.inputText}
+                            /> */}
                         </div>
                     ) : (null)}
                     {ssa != null && ssa.details.softwareEnvironment === 'production' ? (
@@ -480,6 +492,20 @@ const ApplicationCreate = (props) => {
                                 name='org_id_production'
                                 className={classes.inputText}
                             />
+                            {/* <TextField
+                                classes={{
+                                    root: classes.mandatoryStarText,
+                                }}
+                                margin='normal'
+                                variant='outlined'
+                                required
+                                disabled
+                                label='SSA'
+                                value={(ssa != null) ? ssaValue : ''}
+                                fullWidth
+                                name='ssa_value'
+                                className={classes.inputText}
+                            /> */}
                         </div>
                     ) : (null)}
                     {ssa != null && ssa.details.softwareEnvironment === 'none' ? (

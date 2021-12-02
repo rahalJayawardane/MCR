@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <checkstyle version="6.11.2">
-<file name="/Users/rahal/Rahal/wso2_workspace/OB/myRepos/financial-open-banking_support_AU-Authflow/artifacts/manual-client-registration/endpoint/components/com.wso2.finance.open.banking.manual.client.registration.endpoint/src/main/java/com/wso2/finance/open/banking/manual/client/registration/endpoint/impl/SSAInformationApiImpl.java">
+<file name="/Users/rahal/Rahal/setups/OB/UK/MCR/MCR/webapp/manual-client-registration/endpoint/components/com.wso2.finance.open.banking.manual.client.registration.endpoint/src/main/java/com/wso2/finance/open/banking/manual/client/registration/endpoint/impl/SSAInformationApiImpl.java">
 </file>
 </checkstyle>

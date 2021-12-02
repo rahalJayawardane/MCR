@@ -101,6 +101,58 @@ class ApplicationFormHandler extends React.Component {
     };
 
     /**
+     *
+     * @param {*} applicationRequest - get saved attributes from form
+     */
+    generateKeys = (applicationRequest) => {
+        alert('value' + applicationRequest.attributes.ssa_value);
+        // const { keyRequest, keys } = this.state;
+        // this.setState({ isLoading: true });
+        // const {
+            // keyType, updateSubscriptionData, selectedApp: { tokenType, hashEnabled }, intl,
+        // } = this.props;
+        // this.application
+        //     .then((application) => {
+        //         let orgId = keyRequest.organizationId != null ? keyRequest.organizationId : null;
+        //         let certContent = keyRequest.spCertificate != null ? btoa(keyRequest.spCertificate.trim()) : null;
+        //         return application.generateKeys(
+        //             keyType, keyRequest.supportedGrantTypes,
+        //             keyRequest.callbackUrl, keyRequest.validityTime,
+        //             '{ \"orgId\": \"' + orgId + '\", \"spCert\": \"'
+        //             + certContent + '\" }',
+        //         );
+        //     })
+        //     .then((response) => {
+        //         if (updateSubscriptionData) {
+        //             updateSubscriptionData();
+        //         }
+        //         const newKeys = new Map([...keys]);
+        //         // in case token hashing is enabled, isKeyJWT is set to true even if the token type is JWT.
+        //         // This is to mimic the behavior of JWT tokens (by showing the token in a dialog)
+        //         const isKeyJWT = (tokenType === 'JWT') || hashEnabled;
+        //         newKeys.set(keyType, response);
+        //         this.setState({ keys: newKeys, isKeyJWT });
+        //         Alert.info(intl.formatMessage({
+        //             id: 'Shared.AppsAndKeys.TokenManager.key.generate.success',
+        //             defaultMessage: 'Application keys generated successfully',
+        //         }));
+        //     })
+        //     .catch((error) => {
+        //         if (process.env.NODE_ENV !== 'production') {
+        //             console.error(error);
+        //         }
+        //         const { status } = error;
+        //         if (status === 404) {
+        //             this.setState({ notFound: true });
+        //         }
+        //         Alert.error(intl.formatMessage({
+        //             id: 'Shared.AppsAndKeys.TokenManager.key.generate.error',
+        //             defaultMessage: 'Error occurred when generating application keys',
+        //         }));
+        //     }).finally(() => this.setState({ isLoading: false }));
+    }
+
+    /**
      * Initilaize the component if it is in applicatioin edit state
      * @param {String} applicationId application id
      * @memberof ApplicationFormHandler
@@ -288,6 +340,7 @@ class ApplicationFormHandler extends React.Component {
                         defaultMessage: 'Application created successfully.',
                     }));
                     const appId = response.body.applicationId;
+                    this.generateKeys(applicationRequest);
                     history.push(`/applications/${appId}`);
                 }
             })
