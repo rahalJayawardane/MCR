@@ -130,7 +130,7 @@ const ApplicationCreate = (props) => {
         applicationRequest.attributes['org_id_' + env] = ssa.details.orgID;
         applicationRequest.attributes['software_jwks_endpoint_' + env] = ssa.details.softwareJwksEndpointt;
         applicationRequest.attributes['software_roles_' + env] = (ssa.details.softwareRoles).toString();
-        applicationRequest.attributes.ssa_value = ssaValue;
+        applicationRequest.attributes.software_redirect_uris = (ssa.details.ssaredirectURIS).toString();
     }
 
     // todo:
