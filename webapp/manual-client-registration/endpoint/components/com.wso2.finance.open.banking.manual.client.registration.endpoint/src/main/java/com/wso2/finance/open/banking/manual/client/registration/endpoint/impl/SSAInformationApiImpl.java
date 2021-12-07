@@ -1,5 +1,6 @@
 package com.wso2.finance.open.banking.manual.client.registration.endpoint.impl;
 
+import com.wso2.finance.open.banking.common.util.RegexRedirectURIBuilder;
 import com.wso2.finance.open.banking.common.util.client.registration.Utils;
 import com.wso2.finance.open.banking.common.util.client.registration.data.SoftwareStatement;
 import com.wso2.finance.open.banking.manual.client.registration.endpoint.MCRApiService;
@@ -13,6 +14,10 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.api.model.ApiTypeWrapper;
 import org.wso2.carbon.apimgt.api.model.Application;
 import org.wso2.carbon.apimgt.api.model.Scope;
+import org.wso2.carbon.apimgt.impl.APIConstants;
+import org.wso2.carbon.apimgt.impl.APIManagerConfiguration;
+import org.wso2.carbon.apimgt.impl.APIManagerConfigurationService;
+import org.wso2.carbon.apimgt.impl.APIManagerConfigurationServiceImpl;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
 
@@ -37,9 +42,11 @@ public class SSAInformationApiImpl extends MCRApiService {
     private static final Log log = LogFactory.getLog(MCRApiService.class);
     public static final APIManagerFactory API_MANAGER_FACTORY = APIManagerFactory.getInstance();
     private static final String UNLIMITED_TIER = "Unlimited";
+    private static final String ADMIN_USER = "admin@wso2.com"; // config.getFirstProperty(APIConstants.API_KEY_VALIDATOR_USERNAME);
+
     //todo: check API resources
     public static final List<String> API_LIST = Collections.unmodifiableList(Arrays.asList(
-            "^/aisp/(.*)/$", "^/pisp/(.*)/$", "^/ciib/(.*)/$"));
+            "^(.*)/aisp$", "^(.*)/pisp$", "^(.*)/cbpii$"));
 
     @Override
     public Response getSSAInformation(String ssa) {
@@ -65,24 +72,26 @@ public class SSAInformationApiImpl extends MCRApiService {
     public Response generateKeys(String body) throws Exception {
         Map<String, Object> response;
         JSONObject request = new JSONObject(body);
-        response = generateAppKeys(request.getInt("appId"), request.getString("env"),
+        response = generateAppKeys(request.getString("appId"), request.getString("env"),
                 request.getString("owner"), request.getString("redirectUri"),
-                request.getString("scopes"));
+                request.getString("roles"));
         return Response.ok().entity(response).build();
     }
 
     /**
      * Generates keys for the API Store application with given appId.
      *
-     * @param appId - application Id
+     * @param appUUID - application Id
      * @return - storeAppDetails
      * @throws Exception - DynamicClientRegistrationException
      */
-    public static Map<String, Object> generateAppKeys(int appId, String environment, String owner, String callbackUrl,
-                                                      String scopes)
+    public static Map<String, Object> generateAppKeys(String appUUID, String environment, String owner, String callbackUrl,
+                                                      String roles)
             throws Exception {
         Map<String, Object> storeAppDetails = new HashMap<>();
         String additionalParam = String.format("{\"username\":\"%s\"}", owner);
+        int appId = getAppIdFromUuid(appUUID);
+        String callbackUrls = getCallbackUriString(Arrays.asList(callbackUrl.split(",")));
         try {
             APIConsumer apiConsumer = API_MANAGER_FACTORY.getAPIConsumer(owner);
             Application application = apiConsumer.getApplicationById(appId);
@@ -93,7 +102,7 @@ public class SSAInformationApiImpl extends MCRApiService {
             long now = Instant.now().getEpochSecond();
             storeAppDetails.put("clientIdIssuedAt", now);
             storeAppDetails.put("clientSecretExpiresAt", 0);
-            subscribeAPIs(appId, scopes, owner);
+            subscribeAPIs(appId, roles, owner);
         } catch (Exception e) {
             log.error(String.format("Error while generating keys for the application with id %s. %s", appId, e));
             e.printStackTrace();
@@ -101,23 +110,29 @@ public class SSAInformationApiImpl extends MCRApiService {
         return storeAppDetails;
     }
 
+    private static int getAppIdFromUuid(String appUUID) throws Exception {
+        Application existingApp;
+        existingApp = ApiMgtDAO.getInstance().getApplicationByUUID(appUUID);
+        return existingApp.getId();
+    }
+
     /**
      * Subscribe to the published APIs if the requested scopes are matching with the API scope.
      *
      * @param applicationId - applicationId
-     * @param scopes        - String containing scopes requested
+     * @param roles         - String containing roles in SSA
      * @throws Exception    - Exception
      */
-    public static void subscribeAPIs(int applicationId, String scopes, String owner) throws Exception {
+    public static void subscribeAPIs(int applicationId, String roles, String owner) throws Exception {
 
         log.debug("About to subscribe to the published APIs with the new client");
         APIConsumer apiConsumer;
-        List<String> requestedScopes = new ArrayList<>(Arrays.asList(scopes.split(" ")));
+        List<String> requestedScopes = convertRolesToScopes(roles);
         try {
             apiConsumer = API_MANAGER_FACTORY.getAPIConsumer(owner);
             ApiTypeWrapper apiTypeWrapper;
             APIIdentifier apiIdentifier;
-            Set<API> apis = getPublishedApis(owner);
+            Set<API> apis = getPublishedApis(ADMIN_USER);
             for (API api : apis) {
                 if (isSubscriptionRestricted(api)) {
                     continue; //Skip subscribing to API if restricted
@@ -136,7 +151,7 @@ public class SSAInformationApiImpl extends MCRApiService {
                             } catch (NullPointerException e) { //Catching NPE due to a known error in APIM. Try to
                                 // subscribe again. git issue: https://github.com/wso2/product-apim/issues/6850
                                 log.debug("Recursive call due to APIM NPE");
-                                subscribeAPIs(applicationId, scopes, owner);
+                                subscribeAPIs(applicationId, roles, owner);
                             }
                             if (log.isDebugEnabled()) {
                                 log.debug(String.format("Successfully subscribed to %s", apiIdentifier.getApiName()));
@@ -150,7 +165,7 @@ public class SSAInformationApiImpl extends MCRApiService {
                         apiConsumer.addSubscription(apiTypeWrapper, owner, applicationId);
                     } catch (NullPointerException e) {
                         log.debug("Recursive call due to APIM NPE");
-                        subscribeAPIs(applicationId, scopes, owner);
+                        subscribeAPIs(applicationId, roles, owner);
                     }
                     if (log.isDebugEnabled()) {
                         log.debug(String.format("Successfully subscribed to %s", apiIdentifier.getApiName()));
@@ -161,6 +176,25 @@ public class SSAInformationApiImpl extends MCRApiService {
             log.error(String.format("Error occurred while subscribing to the APIs. %s", e));
             throw new Exception("Error occurred while subscribing to the APIs", e);
         }
+    }
+
+    private static List<String> convertRolesToScopes(String roles) {
+        List<String> ssaRoles = new ArrayList<>(Arrays.asList(roles.split(",")));
+        List<String> requestedScopes = new ArrayList<>();
+        for (String scope: ssaRoles) {
+            switch (scope) {
+                case "AISP":
+                    requestedScopes.add("accounts");
+                    break;
+                case "PISP":
+                    requestedScopes.add("payments");
+                    break;
+                case "CBPII":
+                    requestedScopes.add("fundsconfirmations");
+                    break;
+            }
+        }
+        return requestedScopes;
     }
 
     /**
@@ -230,5 +264,19 @@ public class SSAInformationApiImpl extends MCRApiService {
         Set<String> scopeKeySet = new HashSet<>();
         scopeSet.iterator().forEachRemaining((scope) -> scopeKeySet.add(scope.getKey()));
         return scopeKeySet;
+    }
+
+    /**
+     * Join multiple callback uris if available and return as a single string.
+     * ex: regex=(uri1|uri2|uri3)
+     *
+     * @param callbackUris - list of callback uris
+     * @return callbackUriString
+     */
+    public static String getCallbackUriString(List<String> callbackUris) {
+
+        return new RegexRedirectURIBuilder()
+                .addURIList(callbackUris)
+                .build();
     }
 }
