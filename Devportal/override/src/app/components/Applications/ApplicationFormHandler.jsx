@@ -22,12 +22,14 @@ import API from 'AppData/api';
 import ApplicationCreateForm from 'AppComponents/Shared/AppsAndKeys/ApplicationCreateForm';
 import Alert from 'AppComponents/Shared/Alert';
 import Settings from 'AppComponents/Shared/SettingsContext';
+import OBSettings from 'Settings';
 import Application from 'AppData/Application';
 import { Link } from 'react-router-dom';
 import AuthManager from 'AppData/AuthManager';
 import Progress from 'AppComponents/Shared/Progress';
 import ApplicationCreateBase from './Create/ApplicationCreateBase';
 import { withStyles } from '@material-ui/core/styles';
+import axios from 'axios';
 
 /**
  * Main style object
@@ -102,55 +104,48 @@ class ApplicationFormHandler extends React.Component {
 
     /**
      *
-     * @param {*} applicationRequest - get saved attributes from form
+     * @param {*} appResponse
+     * @param {*} applicationRequest - applicationRequest - get saved attributes from form
      */
-    generateKeys = (applicationRequest) => {
-        alert('value' + applicationRequest.attributes.ssa_value);
-        // const { keyRequest, keys } = this.state;
-        // this.setState({ isLoading: true });
-        // const {
-            // keyType, updateSubscriptionData, selectedApp: { tokenType, hashEnabled }, intl,
-        // } = this.props;
-        // this.application
-        //     .then((application) => {
-        //         let orgId = keyRequest.organizationId != null ? keyRequest.organizationId : null;
-        //         let certContent = keyRequest.spCertificate != null ? btoa(keyRequest.spCertificate.trim()) : null;
-        //         return application.generateKeys(
-        //             keyType, keyRequest.supportedGrantTypes,
-        //             keyRequest.callbackUrl, keyRequest.validityTime,
-        //             '{ \"orgId\": \"' + orgId + '\", \"spCert\": \"'
-        //             + certContent + '\" }',
-        //         );
-        //     })
-        //     .then((response) => {
-        //         if (updateSubscriptionData) {
-        //             updateSubscriptionData();
-        //         }
-        //         const newKeys = new Map([...keys]);
-        //         // in case token hashing is enabled, isKeyJWT is set to true even if the token type is JWT.
-        //         // This is to mimic the behavior of JWT tokens (by showing the token in a dialog)
-        //         const isKeyJWT = (tokenType === 'JWT') || hashEnabled;
-        //         newKeys.set(keyType, response);
-        //         this.setState({ keys: newKeys, isKeyJWT });
-        //         Alert.info(intl.formatMessage({
-        //             id: 'Shared.AppsAndKeys.TokenManager.key.generate.success',
-        //             defaultMessage: 'Application keys generated successfully',
-        //         }));
-        //     })
-        //     .catch((error) => {
-        //         if (process.env.NODE_ENV !== 'production') {
-        //             console.error(error);
-        //         }
-        //         const { status } = error;
-        //         if (status === 404) {
-        //             this.setState({ notFound: true });
-        //         }
-        //         Alert.error(intl.formatMessage({
-        //             id: 'Shared.AppsAndKeys.TokenManager.key.generate.error',
-        //             defaultMessage: 'Error occurred when generating application keys',
-        //         }));
-        //     }).finally(() => this.setState({ isLoading: false }));
-    }
+     generateKeysAndSubscription = async (appResponse, applicationRequest) => {
+         console.log(applicationRequest);
+         console.log(appResponse);
+         let appEnv = null;
+         let appRoles = null;
+         if (applicationRequest.attributes.software_id_production != null) {
+             appEnv = 'PRODUCTION';
+             appRoles = applicationRequest.attributes.software_roles_production;
+         } else {
+             appEnv = 'SANDBOX';
+             appRoles = applicationRequest.attributes.software_roles_sandbox;
+         }
+         const apimServerURL = OBSettings.openbanking.apim_url;
+         const request = {
+             appId: appResponse.applicationId,
+             env: appEnv,
+             owner: appResponse.owner,
+             redirectUri: applicationRequest.attributes.software_redirect_uris,
+             roles: appRoles,
+         };
+
+         await axios.post(
+             apimServerURL + '/api/openbanking/manual-client-registration/mcr/ssa/key/generate',
+             request,
+             {
+                 headers: {
+                     'content-type': 'application/json',
+                 },
+             },
+         )
+             .then(() => {
+                 console.log('Key generation and subscrption added successfully.');
+                 return true;
+             })
+             .catch(() => {
+                 console.log('Key generation and/or subscrption failed.');
+                 return false;
+             });
+     }
 
     /**
      * Initilaize the component if it is in applicatioin edit state
@@ -316,14 +311,14 @@ class ApplicationFormHandler extends React.Component {
      * request to the backend
      * @memberof ApplicationFormHandler
      */
-    saveApplication = () => {
+    saveApplication = async () => {
         const { applicationRequest } = this.state;
         const { intl, history } = this.props;
         if (applicationRequest.attributes.regulatory == null) {
             applicationRequest.attributes.regulatory = true;
         }
         const api = new API();
-        this.validateName(applicationRequest.name)
+        await this.validateName(applicationRequest.name)
             .then(() => this.validateAttributes(applicationRequest.attributes))
             .then(() => api.createApplication(applicationRequest))
             .then((response) => {
@@ -340,8 +335,12 @@ class ApplicationFormHandler extends React.Component {
                         defaultMessage: 'Application created successfully.',
                     }));
                     const appId = response.body.applicationId;
-                    this.generateKeys(applicationRequest);
+                    // if MCR is enabled then generate keys and subscribe APIs
+                    if (OBSettings.openbanking.enableMCR) {
+                        this.generateKeysAndSubscription(response.body, applicationRequest);
+                    }
                     history.push(`/applications/${appId}`);
+                    //
                 }
             })
             .catch((error) => {
