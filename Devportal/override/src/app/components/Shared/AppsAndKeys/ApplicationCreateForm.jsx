@@ -94,9 +94,7 @@ const ApplicationCreate = (props) => {
     };
 
     const [ssa, setSSA] = React.useState(null);
-    const [ssaValue, setSSAvalue] = React.useState(null);
     const { useEffect } = React;
-    const [isSSAValid, setIsSSAValid] = React.useState(false);
 
     /**
      *
@@ -133,32 +131,12 @@ const ApplicationCreate = (props) => {
         applicationRequest.attributes.software_redirect_uris = (ssa.details.ssaredirectURIS).toString();
     }
 
-    // todo:
-    // eslint-disable-next-line require-jsdoc
-    function verifySSA(value) {
-        // alert(value);
-        if (!value || value.trim() === '') {
-            setIsSSAValid({ isSSAValid: false });
-            return Promise.reject(new Error(intl.formatMessage({
-                defaultMessage: 'Application name is required',
-                id: 'Apis.Details.Credentials.Wizard.CreateAppStep.application.name.is.required',
-            })));
-        } else {
-            setIsSSAValid({ isSSAValid: true });
-            return Promise.reject(new Error(intl.formatMessage({
-                defaultMessage: 'Application name is required',
-                id: 'Apis.Details.Credentials.Wizard.CreateAppStep.application.name.is.required',
-            })));
-        }
-    };
-
     /**
      * AJAX call for MCR details
      * @param {*} event - get ssa from input
      */
     async function validateSSA(event) {
         const request = { ssa: event.target.value };
-        setSSAvalue(event.target.value);
         const apimServerURL = Settings.openbanking.apim_url;
         let returnValue = null;
         await axios.post(
@@ -342,21 +320,17 @@ const ApplicationCreate = (props) => {
                                 id='Shared.AppsAndKeys.ApplicationCreateForm.application.ssa.label'
                             />
                         )}
-                        // helperText={intl.formatMessage({
-                        //     defaultMessage:
-                        //             'The SSA given by OBIE',
-                        //     id: 'Shared.AppsAndKeys.ApplicationCreateForm.ssa.help',
-                        // })}
+                        helperText={intl.formatMessage({
+                            defaultMessage:
+                                    'The SSA given by OBIE',
+                            id: 'Shared.AppsAndKeys.ApplicationCreateForm.ssa.help',
+                        })}
                         name='ssa'
                         onChange={validateSSA}
                         placeholder={intl.formatMessage({
                             defaultMessage: 'SSA value',
                             id: 'Shared.AppsAndKeys.ApplicationCreateForm.application.ssa.placeholder',
                         })}
-                        onBlur={(e) => verifySSA(e.target.value)}
-                        // error={!isSSAValid}
-                        error={(e) => e.target.value === ''}
-                        helperText={((e) => e.target.value === '') ? 'Empty field!' : 'sadasdd'}
                     />
                     {ssa != null && ssa.details.softwareEnvironment === 'sandbox' ? (
                         <div>
@@ -417,20 +391,6 @@ const ApplicationCreate = (props) => {
                                 name='org_id_sandbox'
                                 className={classes.inputText}
                             />
-                            {/* <TextField
-                                classes={{
-                                    root: classes.mandatoryStarText,
-                                }}
-                                margin='normal'
-                                variant='outlined'
-                                required
-                                disabled
-                                label='SSA'
-                                value={(ssa != null) ? ssaValue : ''}
-                                fullWidth
-                                name='ssa_value'
-                                className={classes.inputText}
-                            /> */}
                         </div>
                     ) : (null)}
                     {ssa != null && ssa.details.softwareEnvironment === 'production' ? (
@@ -492,20 +452,6 @@ const ApplicationCreate = (props) => {
                                 name='org_id_production'
                                 className={classes.inputText}
                             />
-                            {/* <TextField
-                                classes={{
-                                    root: classes.mandatoryStarText,
-                                }}
-                                margin='normal'
-                                variant='outlined'
-                                required
-                                disabled
-                                label='SSA'
-                                value={(ssa != null) ? ssaValue : ''}
-                                fullWidth
-                                name='ssa_value'
-                                className={classes.inputText}
-                            /> */}
                         </div>
                     ) : (null)}
                     {ssa != null && ssa.details.softwareEnvironment === 'none' ? (

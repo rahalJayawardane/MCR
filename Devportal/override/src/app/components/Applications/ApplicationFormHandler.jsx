@@ -44,6 +44,10 @@ const styles = theme => ({
     }
 });
 
+function checkMCR() {
+    alert('asdasd');
+}
+
 /**
  * Component used to handle application creation
  * @class ApplicationFormHandler
@@ -108,8 +112,6 @@ class ApplicationFormHandler extends React.Component {
      * @param {*} applicationRequest - applicationRequest - get saved attributes from form
      */
      generateKeysAndSubscription = async (appResponse, applicationRequest) => {
-         console.log(applicationRequest);
-         console.log(appResponse);
          let appEnv = null;
          let appRoles = null;
          if (applicationRequest.attributes.software_id_production != null) {
@@ -312,14 +314,16 @@ class ApplicationFormHandler extends React.Component {
      * @memberof ApplicationFormHandler
      */
     saveApplication = async () => {
+        // eslint-disable-next-line no-undef
         const { applicationRequest } = this.state;
         const { intl, history } = this.props;
         if (applicationRequest.attributes.regulatory == null) {
             applicationRequest.attributes.regulatory = true;
         }
         const api = new API();
-        await this.validateName(applicationRequest.name)
+        await Promise.all(this.validateName(applicationRequest.name)
             .then(() => this.validateAttributes(applicationRequest.attributes))
+            .then(() => this.validateMCR(applicationRequest.attributes))
             .then(() => api.createApplication(applicationRequest))
             .then((response) => {
                 if (response.body.status === 'CREATED') {
@@ -340,7 +344,6 @@ class ApplicationFormHandler extends React.Component {
                         this.generateKeysAndSubscription(response.body, applicationRequest);
                     }
                     history.push(`/applications/${appId}`);
-                    //
                 }
             })
             .catch((error) => {
@@ -355,7 +358,7 @@ class ApplicationFormHandler extends React.Component {
                     Alert.error(error.message);
                 }
                 console.error('Error while creating the application');
-            });
+            }));
     };
 
     /**
@@ -403,6 +406,25 @@ class ApplicationFormHandler extends React.Component {
         }
         this.setState({ isNameValid: true });
         return Promise.resolve(true);
+    };
+
+    validateMCR = (attributes) => {
+        let validForm = true;
+        if (!OBSettings.openbanking.enableMCR) {
+            return Promise.resolve(validForm);
+        } else if (!attributes.software_id_production) {
+            if (!attributes.software_id_sandbox || !attributes.org_id_sandbox || !attributes.software_roles_sandbox || !attributes.software_jwks_endpoint_sandbox) {
+                validForm = false;
+            }
+        } else if (!attributes.software_id_production || !attributes.org_id_production || !attributes.software_roles_production || !attributes.software_jwks_endpoint_production) {
+            validForm = false;
+        }
+
+        if (!validForm) {
+            throw Error('Please provide a valid SSA');
+        } else {
+            return Promise.resolve(true);
+        }
     };
 
     /**
