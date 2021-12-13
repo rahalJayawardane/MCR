@@ -40,13 +40,47 @@ const styles = theme => ({
     button: {
         '& span': {
             color: theme.palette.getContrastText(theme.palette.primary.main),
-        }
-    }
+        },
+    },
 });
 
-function checkMCR() {
-    alert('asdasd');
+// eslint-disable-next-line require-jsdoc
+const x = function isApplicationExists2(applicationRequest) {
+    let appId = null;
+    alert('asdsddddd');
+    if (applicationRequest.attributes.software_id_production != null) {
+        appId = applicationRequest.attributes.software_id_production;
+    } else {
+        appId = applicationRequest.attributes.software_id_sandbox;
+    }
+    const apimServerURL = OBSettings.openbanking.apim_url;
+    const request = {
+        softwareId: appId,
+    };
+
+    axios.post(
+        apimServerURL + '/api/openbanking/manual-client-registration/mcr/app/exists',
+        request,
+        {
+            headers: {
+                'content-type': 'application/json',
+            },
+        },
+    )
+        .then((response) => {
+            if (response.data.isExist) {
+                console.log('Application is already exists!');
+                return true;
+            } else {
+                return true;
+            }
+        })
+        .catch(() => {
+            console.log('Key generation and/or subscrption failed.');
+            return false;
+        });
 }
+
 
 /**
  * Component used to handle application creation
@@ -107,7 +141,47 @@ class ApplicationFormHandler extends React.Component {
     };
 
     /**
-     *
+     * Generate app keys and subscribe APIs
+     * @param {*} appResponse
+     * @param {*} applicationRequest - applicationRequest - get saved attributes from form
+     */
+    isApplicationExists = async (applicationRequest) => {
+        let appId = null;
+        if (applicationRequest.attributes.software_id_production != null) {
+            appId = applicationRequest.attributes.software_id_production;
+        } else {
+            appId = applicationRequest.attributes.software_id_sandbox;
+        }
+        const apimServerURL = OBSettings.openbanking.apim_url;
+        const request = {
+            softwareId: appId,
+        };
+
+        await axios.post(
+            apimServerURL + '/api/openbanking/manual-client-registration/mcr/app/exists',
+            request,
+            {
+                headers: {
+                    'content-type': 'application/json',
+                },
+            },
+        )
+            .then((response) => {
+                if (response.data.isExist) {
+                    console.log('Application is already exists!');
+                    return true;
+                } else {
+                    return true;
+                }
+            })
+            .catch(() => {
+                console.log('Key generation and/or subscrption failed.');
+                return false;
+            });
+    }
+
+    /**
+     * Generate app keys and subscribe APIs
      * @param {*} appResponse
      * @param {*} applicationRequest - applicationRequest - get saved attributes from form
      */
@@ -320,45 +394,53 @@ class ApplicationFormHandler extends React.Component {
         if (applicationRequest.attributes.regulatory == null) {
             applicationRequest.attributes.regulatory = true;
         }
-        const api = new API();
-        await Promise.all(this.validateName(applicationRequest.name)
-            .then(() => this.validateAttributes(applicationRequest.attributes))
-            .then(() => this.validateMCR(applicationRequest.attributes))
-            .then(() => api.createApplication(applicationRequest))
-            .then((response) => {
-                if (response.body.status === 'CREATED') {
-                    Alert.info(intl.formatMessage({
-                        id: 'application.creation.pending',
-                        defaultMessage: 'A request to register this application has been sent.',
-                    }));
-                    history.push('/applications');
-                } else {
-                    console.log('Application created successfully.');
-                    Alert.info(intl.formatMessage({
-                        id: 'Applications.Create.ApplicationFormHandler.Application.created.successfully',
-                        defaultMessage: 'Application created successfully.',
-                    }));
-                    const appId = response.body.applicationId;
-                    // if MCR is enabled then generate keys and subscribe APIs
-                    if (OBSettings.openbanking.enableMCR) {
-                        this.generateKeysAndSubscription(response.body, applicationRequest);
-                    }
-                    history.push(`/applications/${appId}`);
-                }
-            })
-            .catch((error) => {
-                const { response } = error;
-                if (response && response.body) {
-                    const message = response.body.description || intl.formatMessage({
-                        defaultMessage: 'Error while creating the application',
-                        id: 'Applications.Create.ApplicationFormHandler.error.while.creating.the.application',
-                    });
-                    Alert.error(message);
-                } else {
-                    Alert.error(error.message);
-                }
-                console.error('Error while creating the application');
-            }));
+        alert('the value1 ' + x(applicationRequest));
+        alert('the value2 ' + this.isApplicationExists(applicationRequest));
+        console.log(this.isApplicationExists(applicationRequest));
+        alert('the value3 ' + await this.isApplicationExists(applicationRequest));
+        if (this.isApplicationExists(applicationRequest)) {
+            Alert.error('Software ID already exisit!');
+        } else {
+            // const api = new API();
+            // await Promise.all(this.validateName(applicationRequest.name)
+            //     .then(() => this.validateAttributes(applicationRequest.attributes))
+            //     .then(() => this.validateMCR(applicationRequest.attributes))
+            //     .then(() => api.createApplication(applicationRequest))
+            //     .then((response) => {
+            //         if (response.body.status === 'CREATED') {
+            //             Alert.info(intl.formatMessage({
+            //                 id: 'application.creation.pending',
+            //                 defaultMessage: 'A request to register this application has been sent.',
+            //             }));
+            //             history.push('/applications');
+            //         } else {
+            //             console.log('Application created successfully.');
+            //             Alert.info(intl.formatMessage({
+            //                 id: 'Applications.Create.ApplicationFormHandler.Application.created.successfully',
+            //                 defaultMessage: 'Application created successfully.',
+            //             }));
+            //             const appId = response.body.applicationId;
+            //             // if MCR is enabled then generate keys and subscribe APIs
+            //             if (OBSettings.openbanking.enableMCR) {
+            //                 this.generateKeysAndSubscription(response.body, applicationRequest);
+            //             }
+            //             history.push(`/applications/${appId}`);
+            //         }
+            //     })
+            //     .catch((error) => {
+            //         const { response } = error;
+            //         if (response && response.body) {
+            //             const message = response.body.description || intl.formatMessage({
+            //                 defaultMessage: 'Error while creating the application',
+            //                 id: 'Applications.Create.ApplicationFormHandler.error.while.creating.the.application',
+            //             });
+            //             Alert.error(message);
+            //         } else {
+            //             Alert.error(error.message);
+            //         }
+            //         console.error('Error while creating the application');
+            //     }));
+        }
     };
 
     /**
