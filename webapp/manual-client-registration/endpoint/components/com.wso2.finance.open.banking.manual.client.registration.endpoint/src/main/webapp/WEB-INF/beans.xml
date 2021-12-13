@@ -21,7 +21,7 @@
     <bean class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer"/>
     <jaxrs:server id="services" address="/">
         <jaxrs:serviceBeans>
-            <bean class="com.wso2.finance.open.banking.manual.client.registration.endpoint.SSAInformationApi"/>
+            <bean class="com.wso2.finance.open.banking.manual.client.registration.endpoint.MCRApi"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>

@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response;
 public abstract class MCRApiService {
 
     /**
-     * Handle POST request.
+     * Get SSA Details.
      *
      * //@param jsonObject - SSA
      * @return - http response
@@ -34,4 +34,13 @@ public abstract class MCRApiService {
      * @return - http response
      */
     public abstract Response generateKeys(String body) throws Exception;
+
+    /**
+     * Generate Keys
+     * <p>
+     * //@param jsonObject - SSA
+     *
+     * @return - http response
+     */
+    public abstract Boolean isApplicationExists(String body) throws Exception;
 }
