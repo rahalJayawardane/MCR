@@ -40,14 +40,18 @@ const styles = theme => ({
     button: {
         '& span': {
             color: theme.palette.getContrastText(theme.palette.primary.main),
-        },
+        }
     },
 });
 
-// eslint-disable-next-line require-jsdoc
-const x = function isApplicationExists2(applicationRequest) {
+/**
+ * Check the application is exists
+ * @param {*} appResponse
+ * @param {*} applicationRequest - applicationRequest - get saved attributes from form
+ */
+async function isApplicationExists(applicationRequest) {
     let appId = null;
-    alert('asdsddddd');
+    let isExist = false;
     if (applicationRequest.attributes.software_id_production != null) {
         appId = applicationRequest.attributes.software_id_production;
     } else {
@@ -58,7 +62,7 @@ const x = function isApplicationExists2(applicationRequest) {
         softwareId: appId,
     };
 
-    axios.post(
+    await axios.post(
         apimServerURL + '/api/openbanking/manual-client-registration/mcr/app/exists',
         request,
         {
@@ -68,19 +72,42 @@ const x = function isApplicationExists2(applicationRequest) {
         },
     )
         .then((response) => {
-            if (response.data.isExist) {
+            if (response.data.isExists) {
                 console.log('Application is already exists!');
-                return true;
-            } else {
-                return true;
+                isExist = true;
             }
         })
         .catch(() => {
             console.log('Key generation and/or subscrption failed.');
-            return false;
+            isExist = true;
         });
+    return isExist;
 }
 
+
+/**
+ *
+ * @param {*} attributes
+ * @returns
+ */
+function validateMCR(attributes) {
+    let validForm = true;
+    if (!OBSettings.openbanking.enableMCR) {
+        return true;
+    } else if (!attributes.software_id_production) {
+        if (!attributes.software_id_sandbox || !attributes.org_id_sandbox || !attributes.software_roles_sandbox || !attributes.software_jwks_endpoint_sandbox) {
+            validForm = false;
+        }
+    } else if (!attributes.software_id_production || !attributes.org_id_production || !attributes.software_roles_production || !attributes.software_jwks_endpoint_production) {
+        validForm = false;
+    }
+
+    if (!validForm) {
+        return false;
+    } else {
+        return true;
+    }
+};
 
 /**
  * Component used to handle application creation
@@ -110,6 +137,8 @@ class ApplicationFormHandler extends React.Component {
             allAppAttributes: null,
             isApplicationSharingEnabled: true,
             applicationOwner: '',
+            allowedTokenTypes: {},
+            oldAppTokenType: '',
         };
         this.handleAddChip = this.handleAddChip.bind(this);
         this.handleDeleteChip = this.handleDeleteChip.bind(this);
@@ -139,46 +168,6 @@ class ApplicationFormHandler extends React.Component {
         const { applicationRequest } = this.state;
         return applicationRequest.attributes[name];
     };
-
-    /**
-     * Generate app keys and subscribe APIs
-     * @param {*} appResponse
-     * @param {*} applicationRequest - applicationRequest - get saved attributes from form
-     */
-    isApplicationExists = async (applicationRequest) => {
-        let appId = null;
-        if (applicationRequest.attributes.software_id_production != null) {
-            appId = applicationRequest.attributes.software_id_production;
-        } else {
-            appId = applicationRequest.attributes.software_id_sandbox;
-        }
-        const apimServerURL = OBSettings.openbanking.apim_url;
-        const request = {
-            softwareId: appId,
-        };
-
-        await axios.post(
-            apimServerURL + '/api/openbanking/manual-client-registration/mcr/app/exists',
-            request,
-            {
-                headers: {
-                    'content-type': 'application/json',
-                },
-            },
-        )
-            .then((response) => {
-                if (response.data.isExist) {
-                    console.log('Application is already exists!');
-                    return true;
-                } else {
-                    return true;
-                }
-            })
-            .catch(() => {
-                console.log('Key generation and/or subscrption failed.');
-                return false;
-            });
-    }
 
     /**
      * Generate app keys and subscribe APIs
@@ -241,6 +230,7 @@ class ApplicationFormHandler extends React.Component {
                 const throttlingPolicyList = tierResponse.body.list.map((item) => item.name);
                 const allAppAttributes = allAttributes.body.list;
                 const newRequest = { ...applicationRequest };
+                const allowedTokenTypes = this.getAllowedTokenTypes(application.tokenType);
                 newRequest.applicationId = application.applicationId;
                 newRequest.name = application.name;
                 newRequest.throttlingPolicy = application.throttlingPolicy;
@@ -254,6 +244,8 @@ class ApplicationFormHandler extends React.Component {
                     throttlingPolicyList,
                     allAppAttributes,
                     applicationOwner: response[0].owner,
+                    allowedTokenTypes: allowedTokenTypes,
+                    oldAppTokenType: application.tokenType,
                 });
             })
             .catch((error) => {
@@ -272,6 +264,7 @@ class ApplicationFormHandler extends React.Component {
      * @memberof ApplicationFormHandler
      */
     initApplicationCreateState = () => {
+        const allowedTokenTypes = this.getAllowedTokenTypes();
         // Get all the tiers to populate the drop down.
         const api = new API();
         const promiseTiers = api.getAllTiers('application');
@@ -285,6 +278,12 @@ class ApplicationFormHandler extends React.Component {
                 if (throttlingPolicyList.length > 0) {
                     [newRequest.throttlingPolicy] = throttlingPolicyList;
                 }
+                if (allowedTokenTypes.JWT) {
+                    // set the default selected token type to JWT if it is in the allowed token type map.
+                    newRequest.tokenType = 'JWT';
+                } else {
+                    newRequest.tokenType = Object.keys(allowedTokenTypes)[0];
+                }
                 const allAppAttributes = [];
                 allAttributes.body.list.map((item) => allAppAttributes.push(item));
 
@@ -294,7 +293,12 @@ class ApplicationFormHandler extends React.Component {
                 if (allAttributes.length > 0) {
                     newRequest.attributes = allAppAttributes.filter((item) => !item.hidden);
                 }
-                this.setState({ applicationRequest: newRequest, throttlingPolicyList, allAppAttributes });
+                this.setState({
+                    applicationRequest: newRequest,
+                    throttlingPolicyList,
+                    allAppAttributes,
+                    allowedTokenTypes: allowedTokenTypes,
+                });
             })
             .catch((error) => {
                 console.log(error);
@@ -304,7 +308,81 @@ class ApplicationFormHandler extends React.Component {
                     this.setState({ notFound: true });
                 }
             });
-    }
+    };
+
+    /**
+     * Returns the allowed token types map.
+     * @returns {object}
+     */
+    getAllowedTokenTypes = (oldApplicationTokenType) => {
+        const settingsContext = this.context;
+        const allowedTokenTypesArray = settingsContext.settings.allowedAppTokenTypes;
+        let allowedTokenTypesMap = {};
+        // iterate through Application.TOKEN_TYPES map and populate the allowed types as a map
+        if (allowedTokenTypesArray) {
+            Object.entries(Application.TOKEN_TYPES).map(([key, value]) => (
+                allowedTokenTypesArray.map((tokenType) => {
+                    if (tokenType === key) {
+                        allowedTokenTypesMap[key] = value;
+                    }
+                })
+            ));
+
+            if (oldApplicationTokenType) {
+                /*
+                 * In case when application token types are restricted, but before that an application is created
+                 * with a restricted token type, we should show the restricted token type with the allowed token types
+                 * for editing as the app is already created.
+                 * */
+                if (allowedTokenTypesArray
+                    && !allowedTokenTypesArray.includes(oldApplicationTokenType)) {
+                    let key = oldApplicationTokenType;
+                    allowedTokenTypesMap[key] = (Application.TOKEN_TYPES)[key];
+                }
+            }
+            return allowedTokenTypesMap;
+        } else {
+            return Application.TOKEN_TYPES;
+        }
+    };
+
+    /**
+     * Checks token type to complete the helper text for token type field.
+     */
+    checkTokenType = () => {
+        const { classes } = this.props;
+        const { applicationRequest, oldAppTokenType } = this.state;
+        const allowedTokenTypes = this.getAllowedTokenTypes();
+        const newAppTokenType = applicationRequest.tokenType;
+        const settingsContext = this.context;
+        const allowedTokenTypesArray = settingsContext.settings.allowedAppTokenTypes;
+
+        /*
+        * In case when application token types are restricted, but before that an application is created with a
+        * restricted token type, and now the user tries to change the token type of the application. In this scenario,
+        * we provide a warning message saying that you cannot go back to the old token type(now restricted) as it is
+        * restricted.
+        * */
+        if (allowedTokenTypesArray && oldAppTokenType && !Object.keys(allowedTokenTypes).includes(oldAppTokenType)
+            && oldAppTokenType !== newAppTokenType) {
+            return (
+                <span className={classes.warning}>
+                    <FormattedMessage
+                        defaultMessage='If you choose this token type, you will not be able to go back to your old
+                         application token type'
+                        id='Shared.AppsAndKeys.ApplicationCreateForm.select.token.type.warn'
+                    />
+                </span>
+            );
+        } else {
+            return (
+                <FormattedMessage
+                    defaultMessage='Select token type'
+                    id='Shared.AppsAndKeys.ApplicationCreateForm.select.token.type'
+                />
+            );
+        }
+    };
 
     /**
      * Update Application Request state
@@ -388,58 +466,58 @@ class ApplicationFormHandler extends React.Component {
      * @memberof ApplicationFormHandler
      */
     saveApplication = async () => {
-        // eslint-disable-next-line no-undef
         const { applicationRequest } = this.state;
         const { intl, history } = this.props;
         if (applicationRequest.attributes.regulatory == null) {
             applicationRequest.attributes.regulatory = true;
         }
-        alert('the value1 ' + x(applicationRequest));
-        alert('the value2 ' + this.isApplicationExists(applicationRequest));
-        console.log(this.isApplicationExists(applicationRequest));
-        alert('the value3 ' + await this.isApplicationExists(applicationRequest));
-        if (this.isApplicationExists(applicationRequest)) {
-            Alert.error('Software ID already exisit!');
+
+        if (!validateMCR(applicationRequest.attributes)) {
+            Alert.error('Given SSA is not valid');
         } else {
-            // const api = new API();
-            // await Promise.all(this.validateName(applicationRequest.name)
-            //     .then(() => this.validateAttributes(applicationRequest.attributes))
-            //     .then(() => this.validateMCR(applicationRequest.attributes))
-            //     .then(() => api.createApplication(applicationRequest))
-            //     .then((response) => {
-            //         if (response.body.status === 'CREATED') {
-            //             Alert.info(intl.formatMessage({
-            //                 id: 'application.creation.pending',
-            //                 defaultMessage: 'A request to register this application has been sent.',
-            //             }));
-            //             history.push('/applications');
-            //         } else {
-            //             console.log('Application created successfully.');
-            //             Alert.info(intl.formatMessage({
-            //                 id: 'Applications.Create.ApplicationFormHandler.Application.created.successfully',
-            //                 defaultMessage: 'Application created successfully.',
-            //             }));
-            //             const appId = response.body.applicationId;
-            //             // if MCR is enabled then generate keys and subscribe APIs
-            //             if (OBSettings.openbanking.enableMCR) {
-            //                 this.generateKeysAndSubscription(response.body, applicationRequest);
-            //             }
-            //             history.push(`/applications/${appId}`);
-            //         }
-            //     })
-            //     .catch((error) => {
-            //         const { response } = error;
-            //         if (response && response.body) {
-            //             const message = response.body.description || intl.formatMessage({
-            //                 defaultMessage: 'Error while creating the application',
-            //                 id: 'Applications.Create.ApplicationFormHandler.error.while.creating.the.application',
-            //             });
-            //             Alert.error(message);
-            //         } else {
-            //             Alert.error(error.message);
-            //         }
-            //         console.error('Error while creating the application');
-            //     }));
+            const isExist = await isApplicationExists(applicationRequest);
+            if (isExist) {
+                Alert.error('Software ID already exist!');
+            } else {
+                const api = new API();
+                await Promise.all(this.validateName(applicationRequest.name)
+                    .then(() => this.validateAttributes(applicationRequest.attributes))
+                    .then(() => api.createApplication(applicationRequest))
+                    .then((response) => {
+                        if (response.body.status === 'CREATED') {
+                            Alert.info(intl.formatMessage({
+                                id: 'application.creation.pending',
+                                defaultMessage: 'A request to register this application has been sent.',
+                            }));
+                            history.push('/applications');
+                        } else {
+                            console.log('Application created successfully.');
+                            Alert.info(intl.formatMessage({
+                                id: 'Applications.Create.ApplicationFormHandler.Application.created.successfully',
+                                defaultMessage: 'Application created successfully.',
+                            }));
+                            const appId = response.body.applicationId;
+                            // if MCR is enabled then generate keys and subscribe APIs
+                            if (OBSettings.openbanking.enableMCR) {
+                                this.generateKeysAndSubscription(response.body, applicationRequest);
+                            }
+                            history.push(`/applications/${appId}`);
+                        }
+                    })
+                    .catch((error) => {
+                        const { response } = error;
+                        if (response && response.body) {
+                            const message = response.body.description || intl.formatMessage({
+                                defaultMessage: 'Error while creating the application',
+                                id: 'Applications.Create.ApplicationFormHandler.error.while.creating.the.application',
+                            });
+                            Alert.error(message);
+                        } else {
+                            Alert.error(error.message);
+                        }
+                        console.error('Error while creating the application');
+                    }));
+            }
         }
     };
 
@@ -490,25 +568,6 @@ class ApplicationFormHandler extends React.Component {
         return Promise.resolve(true);
     };
 
-    validateMCR = (attributes) => {
-        let validForm = true;
-        if (!OBSettings.openbanking.enableMCR) {
-            return Promise.resolve(validForm);
-        } else if (!attributes.software_id_production) {
-            if (!attributes.software_id_sandbox || !attributes.org_id_sandbox || !attributes.software_roles_sandbox || !attributes.software_jwks_endpoint_sandbox) {
-                validForm = false;
-            }
-        } else if (!attributes.software_id_production || !attributes.org_id_production || !attributes.software_roles_production || !attributes.software_jwks_endpoint_production) {
-            validForm = false;
-        }
-
-        if (!validForm) {
-            throw Error('Please provide a valid SSA');
-        } else {
-            return Promise.resolve(true);
-        }
-    };
-
     /**
      * add a new group function
      * @param {*} chip newly added group
@@ -556,13 +615,13 @@ class ApplicationFormHandler extends React.Component {
     render() {
         const {
             throttlingPolicyList, applicationRequest, isNameValid, allAppAttributes, isApplicationSharingEnabled,
-            isEdit, applicationOwner,
+            isEdit, applicationOwner, allowedTokenTypes
         } = this.state;
         const { match: { params }, classes } = this.props;
 
         const CreatePageTitle = (
             <>
-                <Typography variant='h5'>
+                <Typography variant='h5' component='h1'>
                     <FormattedMessage
                         id='Applications.Create.ApplicationFormHandler.create.application.heading'
                         defaultMessage='Create an application'
@@ -599,7 +658,7 @@ class ApplicationFormHandler extends React.Component {
             </>
         );
         return (
-            params.application_id && applicationRequest.name === ''
+            params.application_id && applicationRequest.throttlingPolicy === ''
                 ? <Progress />
                 : (
                     <ApplicationCreateBase title={isEdit ? EditPageTitle : CreatePageTitle}>
@@ -618,6 +677,8 @@ class ApplicationFormHandler extends React.Component {
                                     isApplicationSharingEnabled={isApplicationSharingEnabled}
                                     handleDeleteChip={this.handleDeleteChip}
                                     handleAddChip={this.handleAddChip}
+                                    allowedTokenTypes={allowedTokenTypes}
+                                    checkTokenType={this.checkTokenType}
                                 />
 
                                 <Box display='flex' justifyContent='flex-start' mt={4} spacing={1}>
