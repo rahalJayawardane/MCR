@@ -116,6 +116,8 @@ const ApplicationCreate = (props) => {
         isApplicationSharingEnabled,
         handleAddChip,
         handleDeleteChip,
+        allowedTokenTypes,
+        checkTokenType,
     } = props;
 
     /**
@@ -160,13 +162,14 @@ const ApplicationCreate = (props) => {
         try {
             await useEffect(() => { setSSA(returnValue); }, []);
         } catch (e) {
-            // console.log(e);
+            console.log('syncing useEffect function failed');
         }
     }
 
     return (
         <form noValidate autoComplete='off' className={classes.applicationForm}>
             <TextField
+                id='application-name'
                 classes={{
                     root: classes.mandatoryStarText,
                 }}
@@ -247,16 +250,11 @@ const ApplicationCreate = (props) => {
                 value={applicationRequest.tokenType}
                 name='tokenType'
                 onChange={handleChange}
-                helperText={(
-                    <FormattedMessage
-                        defaultMessage='Select token type'
-                        id='Shared.AppsAndKeys.ApplicationCreateForm.select.token.type'
-                    />
-                )}
+                helperText={checkTokenType()}
                 margin='normal'
                 variant='outlined'
             >
-                {Object.entries(Application.TOKEN_TYPES).map(([key, value]) => (
+                {Object.entries(allowedTokenTypes).map(([key, value]) => (
                     <MenuItem key={value.displayName} value={key}>
                         {value.displayName}
                     </MenuItem>
@@ -264,6 +262,7 @@ const ApplicationCreate = (props) => {
             </TextField>
 
             <TextField
+                id='application-description'
                 margin='normal'
                 variant='outlined'
                 fullWidth
@@ -466,6 +465,7 @@ const ApplicationCreate = (props) => {
                 Object.entries(allAppAttributes).map((item) => (
                     item[1].hidden !== 'true' ? (
                         <TextField
+                            id={item[1].attribute}
                             classes={{
                                 root: classes.mandatoryStarText,
                             }}
