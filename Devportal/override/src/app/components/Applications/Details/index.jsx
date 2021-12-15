@@ -245,10 +245,6 @@ class Details extends Component {
         return (
             <>
                 <Helmet>
-                    {
-                        console.log('asdsdsaddd'+application.attributes.software_id_sandbox)
-                        //console.log('123233'+application.attributes.software_id_sandbox);
-                    }
                     <title>{`${prefix} ${application.name}${sufix}`}</title>
                 </Helmet>
                 <div
@@ -267,7 +263,7 @@ class Details extends Component {
                     )}
                 >
                     {rootIconVisible && (
-                        <Link to='/applications' className={classes.leftLInkMain}>
+                        <Link to='/applications' className={classes.leftLInkMain} aria-label='All applications'>
                             <CustomIcon width={rootIconSize} height={rootIconSize} icon='applications' />
                             {rootIconTextVisible && (
                                 <Typography className={classes.leftLInkMainText}>
