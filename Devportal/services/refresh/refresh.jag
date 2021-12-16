@@ -75,6 +75,8 @@
                 var idTokenPart1 = idToken.substring(0, idTokenLength / 2);
                 var idTokenPart2 = idToken.substring(idTokenLength / 2, idTokenLength);
 
+                log.info("test2: " + idTokenPart1);
+
                 var accessTokenPart1 = accessToken.substring(0, tokenLength / 2);
                 var accessTokenPart2 = accessToken.substring(tokenLength / 2, tokenLength);
                 var refreshToken = String(tokenResponse.refresh_token);

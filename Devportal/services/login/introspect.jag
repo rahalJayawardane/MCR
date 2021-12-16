@@ -36,7 +36,7 @@
 
     var data = {token: token }
     var introspectResult = post(introspectEndpoint, data , {
-        "Authorization": "Basic " + utils.getBase64EncodedAdminCredentials(), 
+        "Authorization": "Basic " + utils.getBase64EncodedAdminCredentials(),
         "Content-Type": "application/x-www-form-urlencoded"
     },"json");
 
@@ -44,7 +44,7 @@
     response.contentType = "application/json";
 
     // For more info about response.xhr object refer http://jaggeryjs.org/documentation.jag?api=xhr
-    
+
     if (introspectResult.xhr.status === 200) {
         var isEnableEmailUserName = appUtils.isEnableEmailUserName();
         var username = introspectResult.data.username;
