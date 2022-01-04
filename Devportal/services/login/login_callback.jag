@@ -134,36 +134,11 @@
         cookie = {'name': 'devportal_session_state', 'value': request.getParameter("session_state", "UTF-8"), 'path': app.context + "/", "secure": true, "maxAge": Integer(-1)};
         response.addCookie(cookie);
 
-        /**
-        * check whether the OBIE integration enabled
-        *
-        * @returns
-        */
-        if (app.OBIE_integration) {
-            var base64Body = idToken.split("\\.")[1];
-            var decodedBody =  new String(Packages.java.util.Base64.getDecoder().decode(base64Body));
-            var userInfoJSON = JSON.parse(decodedBody);
-            log.info("tpp_associated: "+ userInfoJSON['tpp_associated']);
-            if (userInfoJSON['tpp_associated'] === "false") {
-                var carbon = require('carbon');
-                var realmService = carbon.server.osgiService('org.wso2.carbon.user.core.service.RealmService'), realm = realmService.getTenantUserRealm(-1234);
-                var manager = realm.getUserStoreManager();
-                manager.updateRoleListOfUser(userInfoJSON['email'], null, ["Internal/subscriber"]);
-                var authData = {
-                    "authCode": request.getParameter("code","UTF-8")
-                };
-                log.info("data " + authData.data);
-                var result2 = post("https://localhost:9443/api/openbanking/manual-client-registration/mcr/code/update", authData, null, "json");
-                if (result2.xhr.status === 200) {
-                    response.contentType = "application/json";
-                    var tokenResponse = JSON.parse(result2.data);
-                }
-                log.info("data " + result2.xhr.status);
-            }
+        cookie = {'name': 'USER_ID_TOKEN_DEFAULT', 'value':idToken, 'path': app.context + "/", "secure": true, "maxAge": Integer(-1)};
+        response.addCookie(cookie);
 
-            cookie = {'name': 'TPP_ASSOCIATED_DEFAULT', 'value': true, 'path': app.context + "/", "secure": true, "maxAge": Integer(-1)};
-            response.addCookie(cookie);
-        }
+        cookie = {'name': 'USER_ACCESS_TOKEN_DEFAULT', 'value':accessToken, 'path': app.context + "/", "secure": true, "maxAge": Integer(-1)};
+        response.addCookie(cookie);
 
         var state = request.getParameter("state");
         if (state !== null) {
