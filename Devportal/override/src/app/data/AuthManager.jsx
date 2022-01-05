@@ -142,18 +142,19 @@ class AuthManager {
      * @returns
      */
     static hasBasicLoginPermission(scopes) {
-        const idToken = Utils.getCookie('USER_ID_TOKEN', 'DEFAULT');
-        const body = JSON.parse(Buffer.from(idToken.split('.')[1], 'base64'));
-        console.log(scopes.length === 1);
-        console.log(Settings.app.OBIE_integration);
-        console.log(!idToken);
-        console.log(body.tpp_associated !== 'true');
-        if (scopes.length === 1 && Settings.app.OBIE_integration && idToken && body.tpp_associated !== 'true') {
-            console.log('adding scopes');
-            scopes.push('apim:subscribe');
-        }
-        console.log(scopes);
         return scopes.includes('apim:subscribe');
+    }
+
+    /**
+     * custom function for delay the flow
+     * @param {*} ms
+     */
+    static wait(ms) {
+        const start = new Date().getTime();
+        let end = start;
+        while (end < start + ms) {
+            end = new Date().getTime();
+        }
     }
 
     /**
@@ -179,6 +180,8 @@ class AuthManager {
             if (!AuthManager.setScopesAndRoles()) {
                 console.error('Error while configuring the roles for OBIE users');
             }
+            // Wait 1 seconds before calling introspect
+            AuthManager.wait(1000);
         }
         const promisedResponse = fetch(
             Settings.app.context + '/services/auth/introspect',
