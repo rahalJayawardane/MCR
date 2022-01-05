@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.com). All Rights Reserved.
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.com). All Rights Reserved.
  *
  * This software is the property of WSO2 Inc. and its suppliers, if any.
  * Dissemination of any information or reproduction of any material contained
@@ -85,6 +85,26 @@ public class MCRApi {
         boolean isExists = mcrApiImpl.isApplicationExists(request.getString("softwareId"));
         Map<String, Object> response = new HashMap<>();
         response.put("isExists",isExists);
+        return Response.ok().entity(response).build();
+    }
+
+    @POST
+    @Path("/mcr/role/update")
+    @Consumes({"application/json"})
+    @Produces({"application/json"})
+    @io.swagger.annotations.ApiOperation(value = "Update the oauth2 scopes", response = void.class)
+    @io.swagger.annotations.ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 404, message = "Data Not Found"),
+            @ApiResponse(code = 500, message = "Invalid Data")
+    })
+
+    public Response updateAuthCodeScopes(@RequestBody String data) throws Exception {
+        MCRApiImpl mcrApiImpl = new MCRApiImpl();
+        JSONObject request = new JSONObject(data);
+        boolean updateStatus = mcrApiImpl.assignRoles(request);
+        Map<String, Object> response = new HashMap<>();
+        response.put("scopeUpdated",updateStatus);
         return Response.ok().entity(response).build();
     }
 }

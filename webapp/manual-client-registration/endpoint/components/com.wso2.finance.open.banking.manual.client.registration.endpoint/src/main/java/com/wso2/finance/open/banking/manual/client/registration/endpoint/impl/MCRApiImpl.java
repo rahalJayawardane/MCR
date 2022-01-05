@@ -1,3 +1,15 @@
+/*
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.com). All Rights Reserved.
+ *
+ * This software is the property of WSO2 Inc. and its suppliers, if any.
+ * Dissemination of any information or reproduction of any material contained
+ * herein is strictly forbidden, unless permitted by WSO2 in accordance with
+ * the WSO2 Commercial License available at http://wso2.com/licenses. For specific
+ * language governing the permissions and limitations under this license,
+ * please see the license as well as any agreement you’ve entered into with
+ * WSO2 governing the purchase of this software and any associated services.
+ */
+
 package com.wso2.finance.open.banking.manual.client.registration.endpoint.impl;
 
 import com.wso2.finance.open.banking.common.util.RegexRedirectURIBuilder;
@@ -17,12 +29,13 @@ import org.wso2.carbon.apimgt.api.model.Application;
 import org.wso2.carbon.apimgt.api.model.Scope;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerConfiguration;
-import org.wso2.carbon.apimgt.impl.APIManagerConfigurationService;
-import org.wso2.carbon.apimgt.impl.APIManagerConfigurationServiceImpl;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
+import org.wso2.carbon.user.api.UserRealm;
+import org.wso2.carbon.user.core.service.RealmService;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,11 +57,11 @@ public class MCRApiImpl extends MCRApiService {
     private static final Log log = LogFactory.getLog(MCRApiService.class);
     public static final APIManagerFactory API_MANAGER_FACTORY = APIManagerFactory.getInstance();
     private static final String UNLIMITED_TIER = "Unlimited";
-    static APIManagerConfiguration apimConfig = ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService().
-                    getAPIManagerConfiguration();
+    static APIManagerConfiguration apimConfig = ServiceReferenceHolder.getInstance().
+            getAPIManagerConfigurationService().getAPIManagerConfiguration();
     private static final String ADMIN_USER = apimConfig.getFirstProperty(APIConstants.API_KEY_VALIDATOR_USERNAME);
     public static final List<String> API_LIST = Collections.unmodifiableList(Arrays.asList(
-            "^(.*)/aisp$", "^(.*)/pisp$", "^(.*)/cbpii$"));
+            "^(.*)/aisp$", "^(.*)/pisp$", "^(.*)/cbpii$", "^(.*)/event$"));
 
     @Override
     public Response getSSAInformation(String ssa) {
@@ -72,9 +85,8 @@ public class MCRApiImpl extends MCRApiService {
 
     @Override
     public Response generateKeys(String body) throws Exception {
-        Map<String, Object> response = new HashMap<>();
         JSONObject request = new JSONObject(body);
-        response = generateAppKeys(request.getString("appId"), request.getString("env"),
+        Map<String, Object>  response = generateAppKeys(request.getString("appId"), request.getString("env"),
                 request.getString("owner"), request.getString("redirectUri"),
                 request.getString("roles"));
         return Response.ok().entity(response).build();
@@ -89,16 +101,39 @@ public class MCRApiImpl extends MCRApiService {
      */
     @Override
     public Boolean isApplicationExists(String softwareId) throws Exception {
-        ManualClientRegistrationDAOImpl MCRRegistrationDAO = new ManualClientRegistrationDAOImpl();
-
+        ManualClientRegistrationDAOImpl mcrRegistrationDAO = new ManualClientRegistrationDAOImpl();
         //check if the application already exists in database
-        if (MCRRegistrationDAO.isSoftwareIdExists(softwareId)) {
+        if (mcrRegistrationDAO.isSoftwareIdExists(softwareId)) {
             log.error(String.format("An active application with the software id %s already exists", softwareId));
             return true;
         } else {
             if (log.isDebugEnabled()) {
-                log.debug(String.format("An active application with the software id %s doesn't exist",softwareId));
+                log.debug(String.format("An active application with the software id %s doesn't exist", softwareId));
             }
+            return false;
+        }
+    }
+
+    @Override
+    public Boolean assignRoles(JSONObject body) throws Exception {
+
+        RealmService realmService = ServiceReferenceHolder.getInstance().getRealmService();
+        UserRealm realm = realmService.getTenantUserRealm(-1234);
+
+        realm.getUserStoreManager().updateRoleListOfUser(body.getString("userName"), null,
+                new String[]{"Internal/subscriber"});
+        return updateScopes(body.getString("accessToken"));
+    }
+
+    public Boolean updateScopes(String accessToken) throws Exception {
+        ManualClientRegistrationDAOImpl mcrRegistrationDAO = new ManualClientRegistrationDAOImpl();
+        JSONObject response = mcrRegistrationDAO.getTokenIdFromAccToken(accessToken);
+        try {
+            if (response.getString("tokenId") != null && response.getInt("scopeCount") < 2) {
+                mcrRegistrationDAO.updateScopes(response.getString("tokenId"));
+            }
+            return true;
+        } catch (SQLException e) {
             return false;
         }
     }
@@ -110,8 +145,8 @@ public class MCRApiImpl extends MCRApiService {
      * @return - storeAppDetails
      * @throws Exception - DynamicClientRegistrationException
      */
-    public static Map<String, Object> generateAppKeys(String appUUID, String environment, String owner, String callbackUrl,
-                                                      String roles)
+    public static Map<String, Object> generateAppKeys(String appUUID, String environment, String owner,
+                                                      String callbackUrl, String roles)
             throws Exception {
         Map<String, Object> storeAppDetails = new HashMap<>();
         String additionalParam = String.format("{\"username\":\"%s\"}", owner);
@@ -121,7 +156,7 @@ public class MCRApiImpl extends MCRApiService {
             APIConsumer apiConsumer = API_MANAGER_FACTORY.getAPIConsumer(owner);
             Application application = apiConsumer.getApplicationById(appId);
             storeAppDetails = apiConsumer.requestApprovalForApplicationRegistration(
-                    owner, application.getName(), environment, callbackUrl,
+                    owner, application.getName(), environment, callbackUrls,
                     null, null, null, null, additionalParam);
             // add client_id_issued_at and client_secret_expires_at parameters
             long now = Instant.now().getEpochSecond();
@@ -130,7 +165,6 @@ public class MCRApiImpl extends MCRApiService {
             subscribeAPIs(appId, roles, owner);
         } catch (Exception e) {
             log.error(String.format("Error while generating keys for the application with id %s. %s", appId, e));
-            e.printStackTrace();
         }
         return storeAppDetails;
     }
@@ -229,6 +263,8 @@ public class MCRApiImpl extends MCRApiService {
                     break;
                 case "CBPII":
                     requestedScopes.add("fundsconfirmations");
+                    break;
+                default:
                     break;
             }
         }

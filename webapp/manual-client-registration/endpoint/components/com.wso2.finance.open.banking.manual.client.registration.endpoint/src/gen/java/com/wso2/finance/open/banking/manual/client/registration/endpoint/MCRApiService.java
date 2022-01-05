@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.com). All Rights Reserved.
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.com). All Rights Reserved.
  *
  * This software is the property of WSO2 Inc. and its suppliers, if any.
  * Dissemination of any information or reproduction of any material contained
@@ -11,6 +11,8 @@
  */
 
 package com.wso2.finance.open.banking.manual.client.registration.endpoint;
+
+import org.json.JSONObject;
 
 import javax.ws.rs.core.Response;
 
@@ -43,4 +45,13 @@ public abstract class MCRApiService {
      * @return - http response
      */
     public abstract Boolean isApplicationExists(String body) throws Exception;
+
+    /**
+     * Update the authCode Scopes
+     * <p>
+     * //@param jsonObject - SSA
+     *
+     * @return - http response
+     */
+    public abstract Boolean assignRoles(JSONObject body) throws Exception;
 }
