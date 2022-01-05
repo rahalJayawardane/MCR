@@ -23,6 +23,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Settings from 'Settings';
 import axios from 'axios';
+import Loading from 'AppComponents/Base/Loading/Loading';
 
 /**
  * @inheritdoc
@@ -95,6 +96,7 @@ const ApplicationCreate = (props) => {
 
     const [ssa, setSSA] = React.useState(null);
     const { useEffect } = React;
+    const [isLoading, setLoading] = React.useState(false);
 
     /**
      *
@@ -138,6 +140,7 @@ const ApplicationCreate = (props) => {
      * @param {*} event - get ssa from input
      */
     async function validateSSA(event) {
+        setLoading(true);
         const request = { ssa: event.target.value };
         const apimServerURL = Settings.openbanking.apim_url;
         let returnValue = null;
@@ -162,8 +165,9 @@ const ApplicationCreate = (props) => {
         try {
             await useEffect(() => { setSSA(returnValue); }, []);
         } catch (e) {
-            console.log('syncing useEffect function failed');
+            // console.log('syncing useEffect function failed');
         }
+        setLoading(false);
     }
 
     return (
@@ -300,7 +304,9 @@ const ApplicationCreate = (props) => {
                     id: 'Shared.AppsAndKeys.ApplicationCreateForm.application.regulatory.compliance.label',
                 })}
             />
-
+            {isLoading ? (
+                <div className='apim-dual-ring' />
+            ) : (null) }
             {isMCREnabled ? (
                 <div>
                     <TextField
