@@ -115,7 +115,7 @@ class AuthManager {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ accessToken: token, userName: body.email }),
             };
-            if (body.tpp_associated !== 'true') {
+            if (body.tpp_associated === 'true') {
                 const promisedResponse = fetch(
                     Settings.openbanking.apim_url + '/api/openbanking/manual-client-registration/mcr/role/update',
                     requestOptions,

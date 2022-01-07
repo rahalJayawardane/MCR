@@ -23,7 +23,6 @@ import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Settings from 'Settings';
 import axios from 'axios';
-import Loading from 'AppComponents/Base/Loading/Loading';
 
 /**
  * @inheritdoc
