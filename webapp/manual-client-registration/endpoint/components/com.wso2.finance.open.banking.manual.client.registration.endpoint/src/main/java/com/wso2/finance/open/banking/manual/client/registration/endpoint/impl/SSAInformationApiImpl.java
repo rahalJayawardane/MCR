@@ -78,6 +78,18 @@ public class SSAInformationApiImpl extends MCRApiService {
         return Response.ok().entity(response).build();
     }
 
+    @Override
+    public Boolean isApplicationExists(String body) throws Exception {
+
+        return null;
+    }
+
+    @Override
+    public Boolean assignRoles(JSONObject body) throws Exception {
+
+        return null;
+    }
+
     /**
      * Generates keys for the API Store application with given appId.
      *
